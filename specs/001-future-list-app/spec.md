@@ -15,6 +15,16 @@ People need a lightweight, enjoyable way to keep track of things they want to do
 - **Explorers**: People who save ideas such as restaurants, movies, trips, or books they discover and want to remember
 - **Collectors**: People who enjoy categorizing items and marking completion over time, finding satisfaction in tracking experiences
 
+## Clarifications
+
+### Session 2025-11-06
+
+- Q: Should there be limits on the number of items or categories per user? → A: No hard limits - users can create unlimited items and categories
+- Q: What priority values should be supported for items? → A: Three-level priority: High, Medium, Low (with default of Medium)
+- Q: How should status filtering (todo/done) interact with category filters and search? → A: Status combines with all filters - category, search, and status can all be active simultaneously
+- Q: What password strength requirements should be enforced during signup? → A: Minimal requirements - 6 characters minimum, no complexity rules
+- Q: How should keyword search handle case sensitivity and partial matching? → A: Case-insensitive, partial matching (searching "sush" matches "Sushi", "sushirestaurant", "SUSHI")
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Quick Item Capture (Priority: P1)
@@ -44,11 +54,12 @@ As a user, I want to create an account and log in securely, so my personal wishl
 
 **Acceptance Scenarios**:
 
-1. **Given** I am a new user, **When** I enter a valid email and password on the signup page, **Then** my account is created and I am logged in automatically
+1. **Given** I am a new user, **When** I enter a valid email and password (6+ characters) on the signup page, **Then** my account is created and I am logged in automatically
 2. **Given** I have an account, **When** I log out and log back in with correct credentials, **Then** I see all my previously created items
 3. **Given** I enter an invalid email format during signup, **When** I attempt to create an account, **Then** I see a clear validation message
-4. **Given** I am logged in on one device and add items, **When** I log in on a second device, **Then** I see all my items synchronized
-5. **Given** I am not logged in, **When** I try to access the main list view, **Then** I am redirected to the login page
+4. **Given** I enter a password with fewer than 6 characters during signup, **When** I attempt to create an account, **Then** I see a validation message requiring at least 6 characters
+5. **Given** I am logged in on one device and add items, **When** I log in on a second device, **Then** I see all my items synchronized
+6. **Given** I am not logged in, **When** I try to access the main list view, **Then** I am redirected to the login page
 
 ---
 
@@ -63,9 +74,10 @@ As a user, I want to filter my items by category and search by keyword, so I can
 **Acceptance Scenarios**:
 
 1. **Given** I have items in multiple categories, **When** I select the "Movies" filter, **Then** I see only items in the Movies category
-2. **Given** I have 20 items in my list, **When** I type "sushi" in the search box, **Then** I see only items with "sushi" in the title or description
-3. **Given** I am filtering by "Restaurants", **When** I search for "italian", **Then** I see only restaurants matching "italian"
-4. **Given** I clear the search and filters, **When** I view my list, **Then** I see all items sorted by newest first
+2. **Given** I have 20 items in my list, **When** I type "sushi" in the search box, **Then** I see only items with "sushi" in the title or description (case-insensitive)
+3. **Given** I have an item titled "Sushi Restaurant Downtown", **When** I search for "sush", **Then** the item appears in results (partial matching)
+4. **Given** I am filtering by "Restaurants", **When** I search for "italian", **Then** I see only restaurants matching "italian"
+5. **Given** I clear the search and filters, **When** I view my list, **Then** I see all items sorted by newest first
 
 ---
 
@@ -83,6 +95,7 @@ As a user, I want to mark items as done (or undo them) with a single action, so 
 2. **Given** I have an item marked as "done", **When** I click/tap it again, **Then** it reverts to "todo" status
 3. **Given** I filter to show only "todo" items, **When** I view my list, **Then** I see only incomplete items
 4. **Given** I filter to show only "done" items, **When** I view my list, **Then** I see only completed items
+5. **Given** I am filtering by "Restaurants" category and search for "italian", **When** I also filter by "done" status, **Then** I see only completed Italian restaurant items
 
 ---
 
@@ -139,12 +152,13 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 
 - **Empty list state**: When a user logs in for the first time or has deleted all items, display a welcoming empty state with guidance on adding the first item
 - **Very long item titles**: Titles exceeding reasonable display length should truncate gracefully with ellipsis and show full text on hover/tap
-- **Special characters in search**: Search should handle special characters, punctuation, and Unicode (accents, emoji) correctly
+- **Special characters in search**: Search should handle special characters, punctuation, and Unicode (accents, emoji) correctly using case-insensitive partial matching
 - **Slow network on mobile**: If network latency causes delays, provide visual feedback (loading indicators) and ensure operations queue properly without data loss
 - **Category with many items**: When filtering a category with 100+ items, performance should remain responsive (<1s load time)
 - **Password reset flow**: If a user forgets their password, they should be able to request a reset via email (industry-standard flow)
 - **Concurrent edits**: If a user edits the same item on two devices simultaneously, last write wins (acceptable for single-user app)
 - **Category name conflicts**: Prevent creating two categories with identical names (case-insensitive)
+- **Large datasets**: With no hard limits on items/categories, system must maintain performance through database indexing and query optimization
 
 ## Requirements
 
@@ -153,7 +167,7 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 #### Item Management
 
 - **FR-001**: System MUST allow authenticated users to create new items with a required title (1-200 characters) and required category
-- **FR-002**: System MUST allow users to optionally add description (0-1000 characters), URL, location, note, priority, and target date to items
+- **FR-002**: System MUST allow users to optionally add description (0-1000 characters), URL, location, note, priority (High/Medium/Low, defaults to Medium), and target date to items
 - **FR-003**: System MUST validate that title and category are provided before saving an item
 - **FR-004**: System MUST display items sorted by creation date (newest first) by default
 - **FR-005**: System MUST allow users to edit any field of an existing item
@@ -172,33 +186,35 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 #### Search & Filtering
 
 - **FR-014**: System MUST allow users to filter items by a single category
-- **FR-015**: System MUST allow users to search items by keyword, matching against title and description fields
+- **FR-015**: System MUST allow users to search items by keyword using case-insensitive partial matching against title and description fields
 - **FR-016**: System MUST support combined category filter and keyword search
-- **FR-017**: System MUST allow users to clear filters and return to full list view
+- **FR-017**: System MUST allow users to filter items by status (todo/done) independently or combined with category and search filters
+- **FR-018**: System MUST allow users to clear filters and return to full list view
 
 #### Authentication & Privacy
 
-- **FR-018**: System MUST require users to create an account before accessing any features
-- **FR-019**: System MUST authenticate users via email and password
-- **FR-020**: System MUST hash passwords securely (bcrypt, Argon2, or equivalent) before storage
-- **FR-021**: System MUST maintain secure session management with appropriate timeouts
-- **FR-022**: System MUST allow users to log out, clearing their session
-- **FR-023**: System MUST isolate user data so users can only access their own items and categories
-- **FR-024**: System MUST prevent unauthenticated access to any item or category data
-- **FR-025**: System MUST provide a password reset mechanism via email
+- **FR-019**: System MUST require users to create an account before accessing any features
+- **FR-020**: System MUST authenticate users via email and password
+- **FR-021**: System MUST validate that passwords are at least 6 characters in length during account creation
+- **FR-022**: System MUST hash passwords securely (bcrypt, Argon2, or equivalent) before storage
+- **FR-023**: System MUST maintain secure session management with appropriate timeouts
+- **FR-024**: System MUST allow users to log out, clearing their session
+- **FR-025**: System MUST isolate user data so users can only access their own items and categories
+- **FR-026**: System MUST prevent unauthenticated access to any item or category data
+- **FR-027**: System MUST provide a password reset mechanism via email
 
 #### Data Persistence
 
-- **FR-026**: System MUST persist all user data (items, categories, user profile) to a remote database
-- **FR-027**: System MUST synchronize data across multiple devices for the same user account
-- **FR-028**: System MUST handle concurrent operations gracefully (last write wins for single-user context)
+- **FR-028**: System MUST persist all user data (items, categories, user profile) to a remote database
+- **FR-029**: System MUST synchronize data across multiple devices for the same user account
+- **FR-030**: System MUST handle concurrent operations gracefully (last write wins for single-user context)
 
 #### User Experience
 
-- **FR-029**: System MUST provide clear, immediate feedback for all user actions (add, edit, delete, complete)
-- **FR-030**: System MUST display helpful validation messages when required fields are missing or invalid
-- **FR-031**: System MUST show a welcoming empty state when a user has no items
-- **FR-032**: System MUST provide loading indicators during network operations
+- **FR-031**: System MUST provide clear, immediate feedback for all user actions (add, edit, delete, complete)
+- **FR-032**: System MUST display helpful validation messages when required fields are missing or invalid
+- **FR-033**: System MUST show a welcoming empty state when a user has no items
+- **FR-034**: System MUST provide loading indicators during network operations
 
 ### Non-Functional Requirements
 
@@ -244,7 +260,7 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 
 - **Item**: Represents a future activity or experience the user wants to remember and potentially complete
   - Required attributes: unique identifier, title, category reference, status (todo/done), creation timestamp, last updated timestamp, user reference (owner)
-  - Optional attributes: description, URL, location, note, priority, target date
+  - Optional attributes: description, URL, location, note, priority (High/Medium/Low, defaults to Medium if set), target date
   - Relationships: Belongs to one User, belongs to one Category
 
 - **Category**: Represents a grouping mechanism for organizing items (e.g., Movies, Restaurants)
@@ -275,6 +291,7 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 - **Testing approach**: Manual testing only; no automated test suites per project constitution
 - **Localization**: English language only for v1; internationalization can be added later
 - **Image attachments**: Not included in v1; items are text-based with optional URL links
+- **Data volume**: No hard limits on number of items or categories per user; system relies on performance optimization and database indexing to handle large datasets efficiently
 
 ## Out of Scope (v1)
 
@@ -299,4 +316,3 @@ As a user, I want to create custom categories beyond the defaults (Movies, Resta
 - Should items support image attachments or remain text/URL-based?
 - Should export/import features be added for data portability?
 - Should users be able to manually reorder items or pin favorites?
-- Should there be limits on the number of items or categories per user?
