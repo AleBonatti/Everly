@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Inbox, Plus, X } from 'lucide-react'
+import { User, Inbox, Plus, X, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
@@ -32,6 +34,8 @@ interface Item {
 }
 
 export default function HomePage() {
+  const router = useRouter()
+
   // State
   const [items, setItems] = useState<Item[]>([
     {
@@ -60,6 +64,7 @@ export default function HomePage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Add item form state
   const [newTitle, setNewTitle] = useState('')
@@ -140,20 +145,48 @@ export default function HomePage() {
     return categories.find((c) => c.value === categoryId)?.label || categoryId
   }
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push('/auth/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top bar */}
       <header className="border-b border-slate-200 bg-white shadow-sm">
         <div className="container-custom flex h-16 items-center justify-between">
           <h1 className="text-2xl font-bold text-slate-900">FutureList</h1>
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-            aria-label="User menu"
-          >
-            <User className="h-5 w-5" />
-            <span className="hidden sm:inline">Account</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+              aria-label="User menu"
+            >
+              <User className="h-5 w-5" />
+              <span className="hidden sm:inline">Account</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              aria-label="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="hidden sm:inline">
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </span>
+            </button>
+          </div>
         </div>
       </header>
 
