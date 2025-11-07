@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Loader from '@/components/ui/Loader'
@@ -66,18 +67,27 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Replace with actual Supabase auth call
-      // const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Simulate auth logic (replace with real Supabase auth)
-      if (email === 'demo@example.com' && password === 'password') {
-        router.push('/')
-      } else {
-        setAuthError('Invalid email or password. Please try again.')
+      if (error) {
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          setAuthError('Invalid email or password. Please try again.')
+        } else if (error.message.includes('Email not confirmed')) {
+          setAuthError('Please verify your email address before signing in.')
+        } else {
+          setAuthError('Unable to sign in. Please try again later.')
+        }
+        return
       }
+
+      // Success - redirect to home
+      router.push('/')
+      router.refresh()
     } catch (error) {
       setAuthError('Something went wrong. Please try again later.')
       console.error('Login error:', error)
@@ -184,13 +194,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Demo credentials hint */}
-        <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-center">
-          <p className="text-xs text-slate-600">
-            <strong>Demo:</strong> demo@example.com / password
-          </p>
         </div>
       </motion.div>
     </div>

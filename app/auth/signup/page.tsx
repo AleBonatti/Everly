@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Loader from '@/components/ui/Loader'
@@ -85,14 +86,30 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Replace with actual Supabase auth call
-      // const { error } = await supabase.auth.signUp({ email, password })
+      const supabase = createClient()
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (error) {
+        // Handle specific error cases
+        if (error.message.includes('already registered')) {
+          setAuthError('This email is already registered. Please sign in instead.')
+        } else if (error.message.includes('password')) {
+          setAuthError('Password does not meet requirements. Please try a stronger password.')
+        } else {
+          setAuthError('Unable to create account. Please try again later.')
+        }
+        return
+      }
 
-      // Simulate successful signup (replace with real Supabase auth)
+      // Success - redirect to home (or show email confirmation message)
       router.push('/')
+      router.refresh()
     } catch (error) {
       setAuthError('Something went wrong. Please try again later.')
       console.error('Signup error:', error)
