@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration: Make Categories Global (Remove user_id)
+-- Migration: Make Categories Global (Remove user_id, Add display_order)
 -- ============================================================================
 -- This script:
 -- 1. Drops RLS policies that depend on user_id
@@ -7,9 +7,13 @@
 -- 3. Removes duplicate categories
 -- 4. Drops foreign key constraint
 -- 5. Drops user_id column
--- 6. Creates new global RLS policies
--- 7. Adds unique constraint on name
--- 8. Seeds default categories if needed
+-- 6. Adds display_order column for custom ordering
+-- 7. Creates new global RLS policies
+-- 8. Adds unique constraint on name
+-- 9. Seeds default categories if needed
+--
+-- IMPORTANT: After running this migration, regenerate TypeScript types:
+-- npx supabase gen types typescript --linked > lib/supabase/types.ts
 -- ============================================================================
 
 -- Step 1: Drop existing RLS policies that depend on user_id
@@ -53,6 +57,19 @@ DROP CONSTRAINT IF EXISTS categories_user_id_fkey;
 ALTER TABLE categories
 DROP COLUMN IF EXISTS user_id;
 
+-- Step 5.5: Add order column for custom ordering
+ALTER TABLE categories
+ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
+
+-- Set initial order based on alphabetical name
+UPDATE categories
+SET display_order = row_number
+FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY name ASC) as row_number
+  FROM categories
+) AS numbered
+WHERE categories.id = numbered.id;
+
 -- Step 6: Create new global RLS policies (allow all authenticated users to read)
 -- Enable RLS if not already enabled
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
@@ -78,20 +95,20 @@ ALTER TABLE categories
 ADD CONSTRAINT categories_name_unique UNIQUE (name);
 
 -- Step 8: Seed default categories if the table is empty or missing standard ones
-INSERT INTO categories (name, type, created_at, updated_at)
-SELECT name, 'default', NOW(), NOW()
+INSERT INTO categories (name, type, display_order, created_at, updated_at)
+SELECT name, 'default', display_order, NOW(), NOW()
 FROM (VALUES
-  ('Movies'),
-  ('Restaurants'),
-  ('Books'),
-  ('Places'),
-  ('Music'),
-  ('Games'),
-  ('Travel'),
-  ('Shopping'),
-  ('Health'),
-  ('Other')
-) AS v(name)
+  ('Movies', 1),
+  ('Restaurants', 2),
+  ('Books', 3),
+  ('Places', 4),
+  ('Music', 5),
+  ('Games', 6),
+  ('Travel', 7),
+  ('Shopping', 8),
+  ('Health', 9),
+  ('Other', 10)
+) AS v(name, display_order)
 WHERE NOT EXISTS (
   SELECT 1 FROM categories WHERE categories.name = v.name
 )
@@ -101,7 +118,8 @@ ON CONFLICT (name) DO NOTHING;
 SELECT
   name,
   type,
+  display_order,
   COUNT(*) OVER() as total_categories,
   (SELECT COUNT(*) FROM items WHERE items.category_id = categories.id) as items_count
 FROM categories
-ORDER BY name;
+ORDER BY display_order ASC;
