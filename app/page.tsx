@@ -360,105 +360,120 @@ export default function HomePage() {
         open={isModalOpen}
         onClose={closeModal}
         title={editingItem ? 'Edit Item' : 'Add New Item'}
-        size="md"
+        size="lg"
       >
-        <div className="space-y-4">
-          <Input
-            label="Title"
-            placeholder="What do you want to do?"
-            value={formTitle}
-            onChange={(e) => setFormTitle(e.target.value)}
-            required
-            fullWidth
-          />
-          <CategoryPicker
-            categories={categories}
-            value={formCategory}
-            onChange={setFormCategory}
-            label="Category"
-            required
-          />
-          <Textarea
-            label="Description (optional)"
-            placeholder="Add more details..."
-            value={formDescription}
-            onChange={(e) => setFormDescription(e.target.value)}
-            rows={3}
-            fullWidth
-          />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Select
-              label="Status"
-              value={formStatus}
-              onChange={(e) => setFormStatus(e.target.value as 'todo' | 'done')}
-              options={[
-                { value: 'todo', label: 'To Do' },
-                { value: 'done', label: 'Done' },
-              ]}
-              required
-              fullWidth
-            />
-            <Select
-              label="Priority (optional)"
-              value={formPriority}
-              onChange={(e) => setFormPriority(e.target.value as 'low' | 'medium' | 'high' | '')}
-              options={[
-                { value: '', label: 'None' },
-                { value: 'low', label: 'Low' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'high', label: 'High' },
-              ]}
-              fullWidth
-            />
+        <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
+          <div className="space-y-4 px-1">
+            {/* Basic Info */}
+            <div className="space-y-3">
+              <Input
+                label="Title"
+                placeholder="What do you want to do?"
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                required
+                fullWidth
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <CategoryPicker
+                  categories={categories}
+                  value={formCategory}
+                  onChange={setFormCategory}
+                  label="Category"
+                  required
+                />
+                <Select
+                  label="Status"
+                  value={formStatus}
+                  onChange={(e) => setFormStatus(e.target.value as 'todo' | 'done')}
+                  options={[
+                    { value: 'todo', label: 'To Do' },
+                    { value: 'done', label: 'Done' },
+                  ]}
+                  required
+                  fullWidth
+                />
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="space-y-3">
+              <Textarea
+                label="Description (optional)"
+                placeholder="Add more details..."
+                value={formDescription}
+                onChange={(e) => setFormDescription(e.target.value)}
+                rows={2}
+                fullWidth
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Select
+                  label="Priority (optional)"
+                  value={formPriority}
+                  onChange={(e) => setFormPriority(e.target.value as 'low' | 'medium' | 'high' | '')}
+                  options={[
+                    { value: '', label: 'None' },
+                    { value: 'low', label: 'Low' },
+                    { value: 'medium', label: 'Medium' },
+                    { value: 'high', label: 'High' },
+                  ]}
+                  fullWidth
+                />
+                <Input
+                  label="Target Date (optional)"
+                  type="date"
+                  value={formTargetDate}
+                  onChange={(e) => setFormTargetDate(e.target.value)}
+                  fullWidth
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Input
+                  label="URL (optional)"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={formUrl}
+                  onChange={(e) => setFormUrl(e.target.value)}
+                  fullWidth
+                />
+                <Textarea
+                  label="Location (optional)"
+                  placeholder="Where is this?"
+                  value={formLocation}
+                  onChange={(e) => setFormLocation(e.target.value)}
+                  rows={1}
+                  fullWidth
+                />
+              </div>
+              <Textarea
+                label="Note (optional)"
+                placeholder="Additional notes..."
+                value={formNote}
+                onChange={(e) => setFormNote(e.target.value)}
+                rows={2}
+                fullWidth
+              />
+            </div>
           </div>
-          <Input
-            label="URL (optional)"
-            type="url"
-            placeholder="https://example.com"
-            value={formUrl}
-            onChange={(e) => setFormUrl(e.target.value)}
-            fullWidth
-          />
-          <Input
-            label="Target Date (optional)"
-            type="date"
-            value={formTargetDate}
-            onChange={(e) => setFormTargetDate(e.target.value)}
-            fullWidth
-          />
-          <Textarea
-            label="Location (optional)"
-            placeholder="Where is this?"
-            value={formLocation}
-            onChange={(e) => setFormLocation(e.target.value)}
-            rows={2}
-            fullWidth
-          />
-          <Textarea
-            label="Note (optional)"
-            placeholder="Additional notes..."
-            value={formNote}
-            onChange={(e) => setFormNote(e.target.value)}
-            rows={2}
-            fullWidth
-          />
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="ghost"
-              onClick={closeModal}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmitForm}
-              disabled={!formTitle.trim() || !formCategory || isSubmitting}
-              loading={isSubmitting}
-            >
-              {editingItem ? 'Save Changes' : 'Add Item'}
-            </Button>
-          </div>
+        </div>
+
+        {/* Actions - Fixed at bottom */}
+        <div className="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4">
+          <Button
+            variant="ghost"
+            onClick={closeModal}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmitForm}
+            disabled={!formTitle.trim() || !formCategory || isSubmitting}
+            loading={isSubmitting}
+          >
+            {editingItem ? 'Save Changes' : 'Add Item'}
+          </Button>
         </div>
       </Modal>
 
