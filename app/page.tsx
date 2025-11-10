@@ -175,6 +175,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => router.push('/account')}
               className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
               aria-label="User menu"
             >
