@@ -1,128 +1,143 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { User, Lock, ArrowLeft, Mail, UserCircle2, AlertCircle, CheckCircle } from 'lucide-react'
-import { getUserProfile, updateUserProfile, updateUserPassword } from '@/lib/services/user'
-import type { UserProfile } from '@/lib/services/user'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Loader from '@/components/ui/Loader'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import {
+  User,
+  Lock,
+  ArrowLeft,
+  Mail,
+  UserCircle2,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
+import {
+  getUserProfile,
+  updateUserProfile,
+  updateUserPassword,
+} from '@/lib/services/user';
+import type { UserProfile } from '@/lib/services/user';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Loader from '@/components/ui/Loader';
 
 export default function AccountPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   // Profile state
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Profile form state
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
-  const [profileSuccess, setProfileSuccess] = useState(false)
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState(false);
 
   // Password form state
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
-  const [passwordSuccess, setPasswordSuccess] = useState(false)
-  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Load user profile
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const data = await getUserProfile()
+        setLoading(true);
+        setError(null);
+        const data = await getUserProfile();
         if (data) {
-          setProfile(data)
-          setFullName(data.fullName || '')
-          setEmail(data.email)
+          setProfile(data);
+          setFullName(data.fullName || '');
+          setEmail(data.email);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load profile'
-        setError(errorMessage)
-        console.error('Error loading profile:', err)
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load profile';
+        setError(errorMessage);
+        console.error('Error loading profile:', err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadProfile()
-  }, [])
+    loadProfile();
+  }, []);
 
   // Handle profile update
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fullName.trim() && !email.trim()) return
+    e.preventDefault();
+    if (!fullName.trim() && !email.trim()) return;
 
     try {
-      setIsUpdatingProfile(true)
-      setProfileSuccess(false)
+      setIsUpdatingProfile(true);
+      setProfileSuccess(false);
       const updatedProfile = await updateUserProfile({
         fullName: fullName.trim(),
         email: email.trim(),
-      })
-      setProfile(updatedProfile)
-      setProfileSuccess(true)
-      setTimeout(() => setProfileSuccess(false), 3000)
+      });
+      setProfile(updatedProfile);
+      setProfileSuccess(true);
+      setTimeout(() => setProfileSuccess(false), 3000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
-      setError(errorMessage)
-      console.error('Error updating profile:', err)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update profile';
+      setError(errorMessage);
+      console.error('Error updating profile:', err);
     } finally {
-      setIsUpdatingProfile(false)
+      setIsUpdatingProfile(false);
     }
-  }
+  };
 
   // Handle password update
   const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordError(null)
-    setPasswordSuccess(false)
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(false);
 
     // Validation
     if (!newPassword.trim()) {
-      setPasswordError('Password is required')
-      return
+      setPasswordError('Password is required');
+      return;
     }
 
     if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters')
-      return
+      setPasswordError('Password must be at least 6 characters');
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match')
-      return
+      setPasswordError('Passwords do not match');
+      return;
     }
 
     try {
-      setIsUpdatingPassword(true)
-      await updateUserPassword({ newPassword })
-      setPasswordSuccess(true)
-      setNewPassword('')
-      setConfirmPassword('')
-      setTimeout(() => setPasswordSuccess(false), 3000)
+      setIsUpdatingPassword(true);
+      await updateUserPassword({ newPassword });
+      setPasswordSuccess(true);
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPasswordSuccess(false), 3000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update password'
-      setPasswordError(errorMessage)
-      console.error('Error updating password:', err)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update password';
+      setPasswordError(errorMessage);
+      console.error('Error updating password:', err);
     } finally {
-      setIsUpdatingPassword(false)
+      setIsUpdatingPassword(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <Loader size="lg" text="Loading your profile..." />
       </div>
-    )
+    );
   }
 
   return (
@@ -140,7 +155,9 @@ export default function AccountPage() {
               <ArrowLeft className="h-5 w-5" />
               <span className="hidden sm:inline">Back</span>
             </button>
-            <h1 className="text-2xl font-bold text-slate-900">Account Settings</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Account Settings
+            </h1>
           </div>
         </div>
       </header>
@@ -174,8 +191,12 @@ export default function AccountPage() {
                 <User className="h-6 w-6 text-sky-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
-                <p className="text-sm text-slate-600">Update your personal details</p>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Profile Information
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Update your personal details
+                </p>
               </div>
             </div>
 
@@ -187,7 +208,9 @@ export default function AccountPage() {
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5" />
-                  <p className="text-sm font-medium">Profile updated successfully!</p>
+                  <p className="text-sm font-medium">
+                    Profile updated successfully!
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -198,7 +221,6 @@ export default function AccountPage() {
                 placeholder="Enter your full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                icon={<UserCircle2 className="h-5 w-5" />}
                 fullWidth
               />
               <Input
@@ -207,7 +229,6 @@ export default function AccountPage() {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                icon={<Mail className="h-5 w-5" />}
                 fullWidth
                 required
               />
@@ -215,7 +236,9 @@ export default function AccountPage() {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isUpdatingProfile || (!fullName.trim() && !email.trim())}
+                  disabled={
+                    isUpdatingProfile || (!fullName.trim() && !email.trim())
+                  }
                   loading={isUpdatingProfile}
                 >
                   Save Changes
@@ -231,8 +254,12 @@ export default function AccountPage() {
                 <Lock className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Change Password</h2>
-                <p className="text-sm text-slate-600">Update your account password</p>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Change Password
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Update your account password
+                </p>
               </div>
             </div>
 
@@ -244,7 +271,9 @@ export default function AccountPage() {
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5" />
-                  <p className="text-sm font-medium">Password updated successfully!</p>
+                  <p className="text-sm font-medium">
+                    Password updated successfully!
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -269,7 +298,6 @@ export default function AccountPage() {
                 placeholder="Enter new password (min. 6 characters)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                icon={<Lock className="h-5 w-5" />}
                 fullWidth
                 required
               />
@@ -279,7 +307,6 @@ export default function AccountPage() {
                 placeholder="Confirm your new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                icon={<Lock className="h-5 w-5" />}
                 fullWidth
                 required
               />
@@ -287,7 +314,9 @@ export default function AccountPage() {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isUpdatingPassword || !newPassword || !confirmPassword}
+                  disabled={
+                    isUpdatingPassword || !newPassword || !confirmPassword
+                  }
                   loading={isUpdatingPassword}
                 >
                   Update Password
@@ -299,11 +328,15 @@ export default function AccountPage() {
           {/* Account Info */}
           {profile && (
             <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold text-slate-900">Account Information</h3>
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">
+                Account Information
+              </h3>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-slate-600">User ID:</dt>
-                  <dd className="font-mono text-xs text-slate-900">{profile.id}</dd>
+                  <dd className="font-mono text-xs text-slate-900">
+                    {profile.id}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-slate-600">Member since:</dt>
@@ -321,5 +354,5 @@ export default function AccountPage() {
         </motion.div>
       </main>
     </div>
-  )
+  );
 }
