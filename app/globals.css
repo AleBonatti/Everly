@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
+  body {
+    @apply bg-white text-slate-800 antialiased;
+  }
+
+  /* Focus ring styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-sky-500 ring-offset-2;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Custom focus ring utility for specific cases */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2;
+  }
+
+  /* Container pattern */
+  .container-custom {
+    @apply mx-auto max-w-[1024px] px-4 sm:px-6 lg:px-8;
+  }
+}
