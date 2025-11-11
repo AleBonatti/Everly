@@ -1,28 +1,26 @@
-'use client'
+'use client';
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { User, Inbox, Plus, LogOut, AlertCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
-import { useItems } from '@/lib/hooks/useItems'
-import { useCategories } from '@/lib/hooks/useCategories'
-import type { Item } from '@/lib/services/items'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Textarea from '@/components/ui/Textarea'
-import Toggle from '@/components/ui/Toggle'
-import Modal from '@/components/ui/Modal'
-import Dialog from '@/components/ui/Dialog'
-import CategoryPicker from '@/components/ui/CategoryPicker'
-import Select from '@/components/ui/Select'
-import EmptyState from '@/components/ui/EmptyState'
-import ListItem from '@/components/ui/ListItem'
-import Loader from '@/components/ui/Loader'
+import React from 'react';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Inbox, Plus, AlertCircle } from 'lucide-react';
+import { useItems } from '@/lib/hooks/useItems';
+import { useCategories } from '@/lib/hooks/useCategories';
+import type { Item } from '@/lib/services/items';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Textarea from '@/components/ui/Textarea';
+import Toggle from '@/components/ui/Toggle';
+import Modal from '@/components/ui/Modal';
+import Dialog from '@/components/ui/Dialog';
+import CategoryPicker from '@/components/ui/CategoryPicker';
+import Select from '@/components/ui/Select';
+import EmptyState from '@/components/ui/EmptyState';
+import ListItem from '@/components/ui/ListItem';
+import Loader from '@/components/ui/Loader';
+import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function HomePage() {
-  const router = useRouter()
-
   // Fetch items from Supabase
   const {
     items: allItems,
@@ -32,102 +30,104 @@ export default function HomePage() {
     updateExistingItem,
     deleteExistingItem,
     toggleStatus,
-  } = useItems()
+  } = useItems();
 
   // Fetch categories from Supabase
   const {
     categories: dbCategories,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories()
+  } = useCategories();
 
   // Transform categories for CategoryPicker component
   const categories = useMemo(() => {
     return dbCategories.map((cat) => ({
       value: cat.id,
       label: cat.name,
-    }))
-  }, [dbCategories])
+    }));
+  }, [dbCategories]);
 
   // UI State
-  const [hideDone, setHideDone] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<Item | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hideDone, setHideDone] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Unified form state (used for both add and edit)
-  const [formTitle, setFormTitle] = useState('')
-  const [formCategory, setFormCategory] = useState('')
-  const [formDescription, setFormDescription] = useState('')
-  const [formStatus, setFormStatus] = useState<'todo' | 'done'>('todo')
-  const [formPriority, setFormPriority] = useState<'low' | 'medium' | 'high' | ''>('')
-  const [formUrl, setFormUrl] = useState('')
-  const [formLocation, setFormLocation] = useState('')
-  const [formNote, setFormNote] = useState('')
-  const [formTargetDate, setFormTargetDate] = useState('')
+  const [formTitle, setFormTitle] = useState('');
+  const [formCategory, setFormCategory] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formStatus, setFormStatus] = useState<'todo' | 'done'>('todo');
+  const [formPriority, setFormPriority] = useState<
+    'low' | 'medium' | 'high' | ''
+  >('');
+  const [formUrl, setFormUrl] = useState('');
+  const [formLocation, setFormLocation] = useState('');
+  const [formNote, setFormNote] = useState('');
+  const [formTargetDate, setFormTargetDate] = useState('');
 
   // Filter items using useMemo
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
-      if (hideDone && item.status === 'done') return false
-      if (selectedCategory && item.categoryId !== selectedCategory) return false
-      return true
-    })
-  }, [allItems, hideDone, selectedCategory])
+      if (hideDone && item.status === 'done') return false;
+      if (selectedCategory && item.categoryId !== selectedCategory)
+        return false;
+      return true;
+    });
+  }, [allItems, hideDone, selectedCategory]);
 
   // Helper function to reset form
   const resetForm = () => {
-    setFormTitle('')
-    setFormCategory('')
-    setFormDescription('')
-    setFormStatus('todo')
-    setFormPriority('')
-    setFormUrl('')
-    setFormLocation('')
-    setFormNote('')
-    setFormTargetDate('')
-    setEditingItem(null)
-  }
+    setFormTitle('');
+    setFormCategory('');
+    setFormDescription('');
+    setFormStatus('todo');
+    setFormPriority('');
+    setFormUrl('');
+    setFormLocation('');
+    setFormNote('');
+    setFormTargetDate('');
+    setEditingItem(null);
+  };
 
   // Helper function to open modal for adding new item
   const openAddModal = () => {
-    resetForm()
-    setIsModalOpen(true)
-  }
+    resetForm();
+    setIsModalOpen(true);
+  };
 
   // Helper function to open modal for editing existing item
   const openEditModal = (id: string) => {
-    const item = allItems.find((i) => i.id === id)
+    const item = allItems.find((i) => i.id === id);
     if (item) {
-      setEditingItem(item)
-      setFormTitle(item.title)
-      setFormCategory(item.categoryId)
-      setFormDescription(item.description || '')
-      setFormStatus(item.status)
-      setFormPriority(item.priority || '')
-      setFormUrl(item.url || '')
-      setFormLocation(item.location || '')
-      setFormNote(item.note || '')
-      setFormTargetDate(item.targetDate || '')
-      setIsModalOpen(true)
+      setEditingItem(item);
+      setFormTitle(item.title);
+      setFormCategory(item.categoryId);
+      setFormDescription(item.description || '');
+      setFormStatus(item.status);
+      setFormPriority(item.priority || '');
+      setFormUrl(item.url || '');
+      setFormLocation(item.location || '');
+      setFormNote(item.note || '');
+      setFormTargetDate(item.targetDate || '');
+      setIsModalOpen(true);
     }
-  }
+  };
 
   // Close modal and reset form
   const closeModal = () => {
-    setIsModalOpen(false)
-    resetForm()
-  }
+    setIsModalOpen(false);
+    resetForm();
+  };
 
   // Unified handler for both add and edit
   const handleSubmitForm = async () => {
-    if (!formTitle.trim() || !formCategory) return
+    if (!formTitle.trim() || !formCategory) return;
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       if (editingItem) {
         // Update existing item
@@ -140,7 +140,7 @@ export default function HomePage() {
           location: formLocation.trim() || null,
           note: formNote.trim() || null,
           targetDate: formTargetDate || null,
-        })
+        });
       } else {
         // Create new item
         await createNewItem({
@@ -153,87 +153,43 @@ export default function HomePage() {
           location: formLocation.trim() || null,
           note: formNote.trim() || null,
           targetDate: formTargetDate || null,
-        })
+        });
       }
 
-      closeModal()
+      closeModal();
     } catch (err) {
-      console.error('Failed to save item:', err)
+      console.error('Failed to save item:', err);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteItem = async (id: string) => {
     try {
-      await deleteExistingItem(id)
-      setDeleteConfirm(null)
+      await deleteExistingItem(id);
+      setDeleteConfirm(null);
     } catch (err) {
-      console.error('Failed to delete item:', err)
+      console.error('Failed to delete item:', err);
     }
-  }
+  };
 
   const handleToggleDone = async (id: string) => {
     try {
-      await toggleStatus(id)
+      await toggleStatus(id);
     } catch (err) {
-      console.error('Failed to toggle item status:', err)
+      console.error('Failed to toggle item status:', err);
     }
-  }
+  };
 
   const getCategoryLabel = (categoryId: string) => {
-    const category = dbCategories.find((c) => c.id === categoryId)
-    return category?.name || categoryId
-  }
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/auth/login')
-      router.refresh()
-    } catch (error) {
-      console.error('Logout error:', error)
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
+    const category = dbCategories.find((c) => c.id === categoryId);
+    return category?.name || categoryId;
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Top bar */}
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <div className="container-custom flex h-16 items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">FutureList</h1>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => router.push('/account')}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-              aria-label="User menu"
-            >
-              <User className="h-5 w-5" />
-              <span className="hidden sm:inline">Account</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:opacity-50"
-              aria-label="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="hidden sm:inline">
-                {isLoggingOut ? 'Logging out...' : 'Logout'}
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <AuthenticatedLayout>
       {/* Main content */}
-      <main className="container-custom py-8">
+      <div className="container-custom py-8">
         {/* Error message */}
         {error && (
           <motion.div
@@ -266,94 +222,94 @@ export default function HomePage() {
           </motion.div>
         ) : (
           <>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Filters section */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CategoryPicker
-              categories={categories}
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-              showAll
-              label="Filter by category"
-            />
-            <Toggle
-              label="Hide done items"
-              checked={hideDone}
-              onChange={(e) => setHideDone(e.target.checked)}
-            />
-          </div>
-
-          {/* Add item button */}
-          <Button
-            variant="primary"
-            icon={<Plus className="h-4 w-4" />}
-            onClick={openAddModal}
-            className="mb-6"
-          >
-            Add New Item
-          </Button>
-
-          {/* Items list or empty state */}
-          {filteredItems.length === 0 ? (
-            <EmptyState
-              icon={Inbox}
-              title={
-                allItems.length === 0
-                  ? 'No items yet'
-                  : 'No items match your filters'
-              }
-              description={
-                allItems.length === 0
-                  ? 'Add your first item to get started with FutureList!'
-                  : 'Try adjusting your filters or add a new item.'
-              }
-              action={
-                allItems.length === 0
-                  ? {
-                      label: 'Add your first item',
-                      onClick: openAddModal,
-                    }
-                  : undefined
-              }
-            />
-          ) : (
             <motion.div
-              className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <AnimatePresence mode="popLayout">
-                {filteredItems.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2, delay: index * 0.05 }}
-                    layout
-                  >
-                    <ListItem
-                      id={item.id}
-                      title={item.title}
-                      category={getCategoryLabel(item.categoryId)}
-                      done={item.status === 'done'}
-                      description={item.description || undefined}
-                      onEdit={openEditModal}
-                      onDelete={(id) => setDeleteConfirm(id)}
-                      onToggleDone={handleToggleDone}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              {/* Filters section */}
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <CategoryPicker
+                  categories={categories}
+                  value={selectedCategory}
+                  onChange={setSelectedCategory}
+                  showAll
+                  label="Filter by category"
+                />
+                <Toggle
+                  label="Hide done items"
+                  checked={hideDone}
+                  onChange={(e) => setHideDone(e.target.checked)}
+                />
+              </div>
+
+              {/* Add item button */}
+              <Button
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                onClick={openAddModal}
+                className="mb-6"
+              >
+                Add New Item
+              </Button>
+
+              {/* Items list or empty state */}
+              {filteredItems.length === 0 ? (
+                <EmptyState
+                  icon={Inbox}
+                  title={
+                    allItems.length === 0
+                      ? 'No items yet'
+                      : 'No items match your filters'
+                  }
+                  description={
+                    allItems.length === 0
+                      ? 'Add your first item to get started with FutureList!'
+                      : 'Try adjusting your filters or add a new item.'
+                  }
+                  action={
+                    allItems.length === 0
+                      ? {
+                          label: 'Add your first item',
+                          onClick: openAddModal,
+                        }
+                      : undefined
+                  }
+                />
+              ) : (
+                <motion.div
+                  className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                  layout
+                >
+                  <AnimatePresence mode="popLayout">
+                    {filteredItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        layout
+                      >
+                        <ListItem
+                          id={item.id}
+                          title={item.title}
+                          category={getCategoryLabel(item.categoryId)}
+                          done={item.status === 'done'}
+                          description={item.description || undefined}
+                          onEdit={openEditModal}
+                          onDelete={(id) => setDeleteConfirm(id)}
+                          onToggleDone={handleToggleDone}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              )}
             </motion.div>
-          )}
-        </motion.div>
-        </>
+          </>
         )}
-      </main>
+      </div>
 
       {/* Unified Add/Edit modal */}
       <Modal
@@ -385,7 +341,9 @@ export default function HomePage() {
                 <Select
                   label="Status"
                   value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value as 'todo' | 'done')}
+                  onChange={(e) =>
+                    setFormStatus(e.target.value as 'todo' | 'done')
+                  }
                   options={[
                     { value: 'todo', label: 'To Do' },
                     { value: 'done', label: 'Done' },
@@ -410,7 +368,11 @@ export default function HomePage() {
                 <Select
                   label="Priority (optional)"
                   value={formPriority}
-                  onChange={(e) => setFormPriority(e.target.value as 'low' | 'medium' | 'high' | '')}
+                  onChange={(e) =>
+                    setFormPriority(
+                      e.target.value as 'low' | 'medium' | 'high' | ''
+                    )
+                  }
                   options={[
                     { value: '', label: 'None' },
                     { value: 'low', label: 'Low' },
@@ -459,11 +421,7 @@ export default function HomePage() {
 
         {/* Actions - Fixed at bottom */}
         <div className="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4">
-          <Button
-            variant="ghost"
-            onClick={closeModal}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" onClick={closeModal} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
@@ -488,6 +446,6 @@ export default function HomePage() {
         confirmText="Delete"
         confirmVariant="danger"
       />
-    </div>
-  )
+    </AuthenticatedLayout>
+  );
 }

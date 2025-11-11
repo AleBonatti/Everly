@@ -1,38 +1,32 @@
 /**
  * Categories Service
  *
- * Provides read operations for categories with Supabase integration.
- * Handles data transformation between database and domain types.
+ * Provides read operations for categories with server-side API integration.
+ * Uses fetch API to communicate with Next.js API routes.
  */
-
-import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/lib/supabase/types';
-
-// Database types
-type DbCategory = Database['public']['Tables']['categories']['Row'];
 
 // Domain types
 export interface Category {
-  id: string;
-  name: string;
-  type: 'default' | 'custom';
-  displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  name: string
+  type: 'default' | 'custom'
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
 }
 
 /**
- * Transform database category to domain category
+ * Transform API response to domain category
  */
-function transformDbCategory(dbCategory: DbCategory): Category {
+function transformApiCategory(apiCategory: any): Category {
   return {
-    id: dbCategory.id,
-    name: dbCategory.name,
-    type: dbCategory.type,
-    displayOrder: dbCategory.display_order || 0,
-    createdAt: dbCategory.created_at,
-    updatedAt: dbCategory.updated_at,
-  };
+    id: apiCategory.id,
+    name: apiCategory.name,
+    type: apiCategory.type,
+    displayOrder: apiCategory.display_order || apiCategory.displayOrder || 0,
+    createdAt: apiCategory.created_at || apiCategory.createdAt,
+    updatedAt: apiCategory.updated_at || apiCategory.updatedAt,
+  }
 }
 
 /**
@@ -40,38 +34,42 @@ function transformDbCategory(dbCategory: DbCategory): Category {
  * Ordered by display_order for custom ordering
  */
 export async function listCategories(): Promise<Category[]> {
-  const supabase = createClient();
+  const response = await fetch('/api/categories', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch categories: ${error.message}`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to fetch categories' }))
+    throw new Error(error.error || 'Failed to fetch categories')
   }
 
-  return data.map(transformDbCategory);
+  const data = await response.json()
+  return data.map(transformApiCategory)
 }
 
 /**
  * Get a single global category by ID
  */
 export async function getCategory(id: string): Promise<Category | null> {
-  const supabase = createClient();
+  const response = await fetch(`/api/categories/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return null;
-    }
-    throw new Error(`Failed to fetch category: ${error.message}`);
+  if (response.status === 404) {
+    return null
   }
 
-  return transformDbCategory(data);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to fetch category' }))
+    throw new Error(error.error || 'Failed to fetch category')
+  }
+
+  const data = await response.json()
+  return transformApiCategory(data)
 }

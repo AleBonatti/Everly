@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   User,
   Lock,
-  ArrowLeft,
   Mail,
   UserCircle2,
   AlertCircle,
@@ -21,9 +19,9 @@ import type { UserProfile } from '@/lib/services/user';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Loader from '@/components/ui/Loader';
+import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function AccountPage() {
-  const router = useRouter();
 
   // Profile state
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -134,36 +132,26 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Loader size="lg" text="Loading your profile..." />
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <Loader size="lg" text="Loading your profile..." />
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Top bar */}
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <div className="container-custom flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-              aria-label="Back to home"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="hidden sm:inline">Back</span>
-            </button>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Account Settings
-            </h1>
-          </div>
+    <AuthenticatedLayout>
+      {/* Page Header */}
+      <div className="border-b border-slate-200 bg-white">
+        <div className="container-custom py-6">
+          <h1 className="text-3xl font-bold text-slate-900">Account Settings</h1>
+          <p className="mt-2 text-slate-600">Manage your profile and preferences</p>
         </div>
-      </header>
+      </div>
 
       {/* Main content */}
-      <main className="container-custom py-8">
+      <div className="container-custom py-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -221,7 +209,6 @@ export default function AccountPage() {
                 placeholder="Enter your full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                /* icon={<UserCircle2 className="h-5 w-5" />} */
                 fullWidth
               />
               <Input
@@ -230,7 +217,6 @@ export default function AccountPage() {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                /* icon={<Mail className="h-5 w-5" />} */
                 fullWidth
                 required
               />
@@ -300,7 +286,6 @@ export default function AccountPage() {
                 placeholder="Enter new password (min. 6 characters)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                /* icon={<Lock className="h-5 w-5" />} */
                 fullWidth
                 required
               />
@@ -310,7 +295,6 @@ export default function AccountPage() {
                 placeholder="Confirm your new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                /* icon={<Lock className="h-5 w-5" />} */
                 fullWidth
                 required
               />
@@ -356,7 +340,7 @@ export default function AccountPage() {
             </div>
           )}
         </motion.div>
-      </main>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }
