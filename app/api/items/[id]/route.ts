@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb, items } from '@/lib/db'
 import { eq, and } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, handleAuthError } from '@/lib/auth/middleware'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -26,23 +26,15 @@ export async function GET(
   try {
     const { id } = await context.params
 
-    // Verify authentication
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Verify authentication using new middleware
+    const authContext = await requireAuth(request)
 
     // Fetch item from database
     const db = getDb()
     const [item] = await db
       .select()
       .from(items)
-      .where(and(eq(items.id, id), eq(items.userId, user.id)))
+      .where(and(eq(items.id, id), eq(items.userId, authContext.user.id)))
       .limit(1)
 
     if (!item) {
@@ -54,6 +46,11 @@ export async function GET(
 
     return NextResponse.json(item)
   } catch (error) {
+    // Handle auth errors (401, 403)
+    if (error instanceof Error && (error.name === 'AuthError' || error.message.includes('Unauthorized') || error.message.includes('Forbidden'))) {
+      return handleAuthError(error)
+    }
+
     console.error('Error fetching item:', error)
     return NextResponse.json(
       { error: 'Failed to fetch item' },
@@ -73,16 +70,8 @@ export async function PATCH(
   try {
     const { id } = await context.params
 
-    // Verify authentication
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Verify authentication using new middleware
+    const authContext = await requireAuth(request)
 
     // Parse request body
     const body = await request.json()
@@ -133,7 +122,7 @@ export async function PATCH(
     const [updatedItem] = await db
       .update(items)
       .set(updateData)
-      .where(and(eq(items.id, id), eq(items.userId, user.id)))
+      .where(and(eq(items.id, id), eq(items.userId, authContext.user.id)))
       .returning()
 
     if (!updatedItem) {
@@ -145,6 +134,11 @@ export async function PATCH(
 
     return NextResponse.json(updatedItem)
   } catch (error) {
+    // Handle auth errors (401, 403)
+    if (error instanceof Error && (error.name === 'AuthError' || error.message.includes('Unauthorized') || error.message.includes('Forbidden'))) {
+      return handleAuthError(error)
+    }
+
     console.error('Error updating item:', error)
     return NextResponse.json(
       { error: 'Failed to update item' },
@@ -164,22 +158,14 @@ export async function DELETE(
   try {
     const { id } = await context.params
 
-    // Verify authentication
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Verify authentication using new middleware
+    const authContext = await requireAuth(request)
 
     // Delete from database
     const db = getDb()
     const [deletedItem] = await db
       .delete(items)
-      .where(and(eq(items.id, id), eq(items.userId, user.id)))
+      .where(and(eq(items.id, id), eq(items.userId, authContext.user.id)))
       .returning()
 
     if (!deletedItem) {
@@ -191,6 +177,11 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    // Handle auth errors (401, 403)
+    if (error instanceof Error && (error.name === 'AuthError' || error.message.includes('Unauthorized') || error.message.includes('Forbidden'))) {
+      return handleAuthError(error)
+    }
+
     console.error('Error deleting item:', error)
     return NextResponse.json(
       { error: 'Failed to delete item' },

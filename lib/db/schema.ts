@@ -12,6 +12,7 @@ import { sql } from 'drizzle-orm'
 export const categoryTypeEnum = pgEnum('category_type', ['default', 'custom'])
 export const itemStatusEnum = pgEnum('item_status', ['todo', 'done'])
 export const itemPriorityEnum = pgEnum('item_priority', ['low', 'medium', 'high'])
+export const userRoleEnum = pgEnum('user_role', ['user', 'admin'])
 
 // Categories table
 export const categories = pgTable('categories', {
@@ -40,8 +41,18 @@ export const items = pgTable('items', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+// User Roles table
+export const userRoles = pgTable('user_roles', {
+  userId: uuid('user_id').primaryKey(), // References auth.users in Supabase
+  role: userRoleEnum('role').notNull().default('user'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 // Types for TypeScript
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
 export type Item = typeof items.$inferSelect
 export type NewItem = typeof items.$inferInsert
+export type UserRole = typeof userRoles.$inferSelect
+export type NewUserRole = typeof userRoles.$inferInsert
