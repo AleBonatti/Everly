@@ -29,6 +29,7 @@ export default function AdminUsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form state
+  const [formName, setFormName] = useState('')
   const [formEmail, setFormEmail] = useState('')
   const [formPassword, setFormPassword] = useState('')
   const [formRole, setFormRole] = useState<UserRole>(USER_ROLES.USER)
@@ -38,6 +39,7 @@ export default function AdminUsersPage() {
 
   // Reset form
   const resetForm = () => {
+    setFormName('')
     setFormEmail('')
     setFormPassword('')
     setFormRole(USER_ROLES.USER)
@@ -53,6 +55,7 @@ export default function AdminUsersPage() {
   // Open modal for editing existing user
   const openEditModal = (user: AdminUser) => {
     setEditingUser(user)
+    setFormName(user.fullName || '')
     setFormEmail(user.email || '')
     setFormPassword('') // Password not needed for edit
     setFormRole(user.role)
@@ -68,12 +71,15 @@ export default function AdminUsersPage() {
   // Handle form submission
   const handleSubmitForm = async () => {
     if (editingUser) {
-      // Update existing user (role only)
+      // Update existing user (name and role)
       if (!formRole) return
 
       try {
         setIsSubmitting(true)
-        await updateUser(editingUser.id, { role: formRole })
+        await updateUser(editingUser.id, {
+          fullName: formName.trim() || undefined,
+          role: formRole
+        })
         closeModal()
       } catch (err) {
         console.error('Failed to update user:', err)
@@ -89,6 +95,7 @@ export default function AdminUsersPage() {
         const input: CreateUserInput = {
           email: formEmail.trim(),
           password: formPassword.trim(),
+          fullName: formName.trim() || undefined,
           role: formRole,
         }
         await createNewUser(input)
@@ -171,7 +178,7 @@ export default function AdminUsersPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      Email
+                      User
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Role
@@ -188,8 +195,15 @@ export default function AdminUsersPage() {
                   {users.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.email || user.id}
+                        <div className="text-sm">
+                          {user.fullName && (
+                            <div className="font-medium text-gray-900">
+                              {user.fullName}
+                            </div>
+                          )}
+                          <div className={user.fullName ? "text-gray-500" : "font-medium text-gray-900"}>
+                            {user.email || <span className="font-mono text-xs text-gray-400">{user.id}</span>}
+                          </div>
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
@@ -271,6 +285,15 @@ export default function AdminUsersPage() {
             {!editingUser && (
               <>
                 <Input
+                  label="Full Name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  fullWidth
+                />
+
+                <Input
                   label="Email"
                   type="email"
                   placeholder="user@example.com"
@@ -293,11 +316,22 @@ export default function AdminUsersPage() {
             )}
 
             {editingUser && (
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="text-sm text-gray-600">
-                  Email: <span className="font-medium text-gray-900">{editingUser.email || editingUser.id}</span>
-                </p>
-              </div>
+              <>
+                <Input
+                  label="Full Name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  fullWidth
+                />
+
+                <div className="rounded-lg bg-gray-50 p-4">
+                  <p className="text-sm text-gray-600">
+                    Email: <span className="font-medium text-gray-900">{editingUser.email || <span className="font-mono text-xs text-gray-400">{editingUser.id}</span>}</span>
+                  </p>
+                </div>
+              </>
             )}
 
             <Select

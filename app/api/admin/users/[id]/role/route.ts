@@ -7,8 +7,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb, userRoles } from '@/lib/db'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { requireAdmin, handleAuthError } from '@/lib/auth/middleware'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { USER_ROLES, type UserRole } from '@/types/auth'
 
 type RouteContext = {
@@ -77,10 +78,10 @@ export async function PATCH(
 
     // Parse request body
     const body = await request.json()
-    const { role } = body as { role: UserRole }
+    const { role, fullName } = body as { role?: UserRole; fullName?: string }
 
-    // Validate role
-    if (!role || !Object.values(USER_ROLES).includes(role)) {
+    // Validate role if provided
+    if (role && !Object.values(USER_ROLES).includes(role)) {
       return NextResponse.json(
         {
           error: 'Invalid role',
@@ -91,33 +92,67 @@ export async function PATCH(
     }
 
     // Prevent admins from demoting themselves
-    if (userId === authContext.user.id && role === USER_ROLES.USER) {
+    if (role && userId === authContext.user.id && role === USER_ROLES.USER) {
       return NextResponse.json(
         { error: 'Cannot demote yourself. Ask another admin to change your role.' },
         { status: 403 }
       )
     }
 
-    // Update user role in database
-    const db = getDb()
-    const [updatedUserRole] = await db
-      .insert(userRoles)
-      .values({
+    // Update user metadata in Supabase Auth if fullName is provided
+    if (fullName !== undefined) {
+      const adminClient = createAdminClient()
+      const { error: authError } = await adminClient.auth.admin.updateUserById(
         userId,
-        role,
-      })
-      .onConflictDoUpdate({
-        target: userRoles.userId,
-        set: {
+        {
+          user_metadata: {
+            full_name: fullName,
+          },
+        }
+      )
+
+      if (authError) {
+        return NextResponse.json(
+          { error: authError.message || 'Failed to update user metadata' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Update user role in database if provided
+    let updatedUserRole
+    if (role) {
+      const db = getDb()
+      const [result] = await db
+        .insert(userRoles)
+        .values({
+          userId,
           role,
-          updatedAt: new Date(),
-        },
-      })
-      .returning()
+        })
+        .onConflictDoUpdate({
+          target: userRoles.userId,
+          set: {
+            role,
+            updatedAt: sql`NOW()`,
+          },
+        })
+        .returning()
+      updatedUserRole = result
+    } else {
+      // If only updating fullName, fetch the current role
+      const db = getDb()
+      const [result] = await db
+        .select()
+        .from(userRoles)
+        .where(eq(userRoles.userId, userId))
+        .limit(1)
+      updatedUserRole = result
+    }
 
     return NextResponse.json({
       ...updatedUserRole,
-      message: `User role updated to ${role}`,
+      fullName: fullName !== undefined ? fullName : undefined,
+      message: 'User updated successfully',
     })
   } catch (error) {
     // Handle auth errors (401, 403)

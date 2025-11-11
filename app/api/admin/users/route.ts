@@ -7,8 +7,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb, userRoles } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 import { requireAdmin, handleAuthError } from '@/lib/auth/middleware'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types/auth'
 
 /**
@@ -27,18 +28,20 @@ export async function GET(request: NextRequest) {
       .from(userRoles)
       .orderBy(userRoles.createdAt)
 
-    // For each user, try to get email from Supabase Auth
-    const supabase = await createClient()
+    // For each user, try to get email and full_name from Supabase Auth using admin client
+    const adminClient = createAdminClient()
     const usersWithEmails = await Promise.all(
       roles.map(async (role) => {
         try {
-          const { data } = await supabase.auth.admin.getUserById(role.userId)
+          const { data } = await adminClient.auth.admin.getUserById(role.userId)
           return {
             ...role,
             email: data.user?.email,
+            fullName: data.user?.user_metadata?.full_name,
           }
-        } catch {
-          // If we can't get email (no service role), just return role data
+        } catch (error) {
+          // If we can't get user details, just return role data
+          console.error(`Failed to fetch user details for ${role.userId}:`, error)
           return role
         }
       })
@@ -72,9 +75,10 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
-    const { email, password, role = 'user' } = body as {
+    const { email, password, fullName, role = 'user' } = body as {
       email: string
       password: string
+      fullName?: string
       role?: UserRole
     }
 
@@ -86,12 +90,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user in Supabase Auth using admin API
-    const supabase = await createClient()
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    // Create user in Supabase Auth using admin client with service role key
+    const adminClient = createAdminClient()
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        full_name: fullName || '',
+      },
     })
 
     if (authError || !authData.user) {
@@ -101,13 +108,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user role in database
+    // Create or update user role in database
+    // Note: The trigger on auth.users should auto-create with 'user' role
+    // We use upsert to set the correct role if different from default
     const db = getDb()
     const [userRole] = await db
       .insert(userRoles)
       .values({
         userId: authData.user.id,
         role: role,
+      })
+      .onConflictDoUpdate({
+        target: userRoles.userId,
+        set: {
+          role: role,
+          updatedAt: sql`NOW()`,
+        },
       })
       .returning()
 
@@ -116,6 +132,7 @@ export async function POST(request: NextRequest) {
         user: {
           ...userRole,
           email: authData.user.email,
+          fullName: authData.user.user_metadata?.full_name,
         },
         message: 'User created successfully',
       },
@@ -128,8 +145,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating user:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create user'
     return NextResponse.json(
-      { error: 'Failed to create user' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

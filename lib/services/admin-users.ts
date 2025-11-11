@@ -11,6 +11,7 @@ import type { UserRole } from '@/types/auth'
 export interface AdminUser {
   id: string
   email?: string
+  fullName?: string
   role: UserRole
   createdAt: string
   updatedAt: string
@@ -19,10 +20,12 @@ export interface AdminUser {
 export interface CreateUserInput {
   email: string
   password: string
+  fullName?: string
   role?: UserRole
 }
 
 export interface UpdateUserInput {
+  fullName?: string
   role?: UserRole
 }
 
@@ -33,6 +36,7 @@ function transformApiUser(apiUser: any): AdminUser {
   return {
     id: apiUser.userId || apiUser.user_id || apiUser.id,
     email: apiUser.email,
+    fullName: apiUser.fullName || apiUser.full_name,
     role: apiUser.role,
     createdAt: apiUser.createdAt || apiUser.created_at,
     updatedAt: apiUser.updatedAt || apiUser.updated_at,

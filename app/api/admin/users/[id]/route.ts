@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb, userRoles } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { requireAdmin, handleAuthError } from '@/lib/auth/middleware'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -36,9 +36,9 @@ export async function DELETE(
       )
     }
 
-    // Delete from Supabase Auth
-    const supabase = await createClient()
-    const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+    // Delete from Supabase Auth using admin client
+    const adminClient = createAdminClient()
+    const { error: authError } = await adminClient.auth.admin.deleteUser(userId)
 
     if (authError) {
       return NextResponse.json(
