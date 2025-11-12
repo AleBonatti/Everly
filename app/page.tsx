@@ -3,10 +3,11 @@
 import React from 'react';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Inbox, Plus, AlertCircle } from 'lucide-react';
+import { Inbox, Plus, AlertCircle, ListTodo, CheckCircle2, Circle, TrendingUp } from 'lucide-react';
 import { useItems } from '@/lib/hooks/useItems';
 import { useCategories } from '@/lib/hooks/useCategories';
 import { useActions } from '@/lib/hooks/useActions';
+import { useItemStats } from '@/lib/hooks/useItemStats';
 import type { Item } from '@/lib/services/items';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -20,6 +21,7 @@ import Select from '@/components/ui/Select';
 import EmptyState from '@/components/ui/EmptyState';
 import ListItem from '@/components/ui/ListItem';
 import Loader from '@/components/ui/Loader';
+import StatCard from '@/components/ui/StatCard';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function HomePage() {
@@ -85,6 +87,9 @@ export default function HomePage() {
   const [formLocation, setFormLocation] = useState('');
   const [formNote, setFormNote] = useState('');
   const [formTargetDate, setFormTargetDate] = useState('');
+
+  // Calculate stats
+  const stats = useItemStats(allItems);
 
   // Filter items using useMemo
   const filteredItems = useMemo(() => {
@@ -255,6 +260,40 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
+              {/* Stats section */}
+              <div className="mb-8">
+                <h2 className="mb-4 text-xl font-bold text-neutral-900">Overview</h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <StatCard
+                    title="Total Items"
+                    value={stats.total}
+                    icon={ListTodo}
+                    variant="primary"
+                  />
+                  <StatCard
+                    title="Completed"
+                    value={stats.done}
+                    icon={CheckCircle2}
+                    variant="success"
+                  />
+                  <StatCard
+                    title="To Do"
+                    value={stats.todo}
+                    icon={Circle}
+                    variant="accent"
+                  />
+                  <StatCard
+                    title="Completion Rate"
+                    value={`${stats.completionRate}%`}
+                    icon={TrendingUp}
+                    variant="neutral"
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="divider" />
+
               {/* Filters section */}
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 sm:max-w-md">
