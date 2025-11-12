@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ListTodo, LogOut, Users, Key } from 'lucide-react';
 import Container from './Container';
 import Button from '../ui/Button';
-import { isCurrentUserAdmin } from '@/lib/auth/client';
+import { useUser } from '@/lib/contexts/UserContext';
 
 export interface HeaderProps {
   isAuthenticated?: boolean;
@@ -13,15 +12,7 @@ export interface HeaderProps {
 }
 
 export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      isCurrentUserAdmin().then(setIsAdmin);
-    } else {
-      setIsAdmin(null);
-    }
-  }, [isAuthenticated]);
+  const { isAdmin } = useUser();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/60">

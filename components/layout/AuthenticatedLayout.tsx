@@ -10,6 +10,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { UserProvider } from '@/lib/contexts/UserContext'
 import Header from './Header'
 
 interface AuthenticatedLayoutProps {
@@ -37,9 +38,11 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header isAuthenticated={true} onLogout={handleLogout} />
-      <main>{children}</main>
-    </div>
+    <UserProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Header isAuthenticated={true} onLogout={handleLogout} />
+        <main>{children}</main>
+      </div>
+    </UserProvider>
   )
 }
