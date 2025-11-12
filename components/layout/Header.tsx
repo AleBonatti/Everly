@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ListTodo, LogOut, Users, Key } from 'lucide-react';
+import { ListTodo, LogOut, Users, Key, FolderTree } from 'lucide-react';
 import Container from './Container';
 import Button from '../ui/Button';
 import { useUser } from '@/lib/contexts/UserContext';
@@ -31,12 +31,20 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
           {isAuthenticated && (
             <nav className="flex items-center gap-4">
               {isAdmin === true && (
-                <Link href="/admin/users">
-                  <Button variant="ghost" size="sm">
-                    <Users className="h-4 w-4" />
-                    <span className="hidden sm:inline">Users</span>
-                  </Button>
-                </Link>
+                <>
+                  <Link href="/admin/categories">
+                    <Button variant="ghost" size="sm">
+                      <FolderTree className="h-4 w-4" />
+                      <span className="hidden sm:inline">Categories</span>
+                    </Button>
+                  </Link>
+                  <Link href="/admin/users">
+                    <Button variant="ghost" size="sm">
+                      <Users className="h-4 w-4" />
+                      <span className="hidden sm:inline">Users</span>
+                    </Button>
+                  </Link>
+                </>
               )}
               <Link href="/account">
                 <Button variant="ghost" size="sm">
