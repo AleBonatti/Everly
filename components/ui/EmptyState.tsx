@@ -26,19 +26,19 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-12 px-4 text-center',
+        'flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50/50 py-16 px-6 text-center',
         className
       )}
     >
-      <div className="mb-4 rounded-full bg-slate-100 p-6">
-        <Icon className="h-12 w-12 text-slate-400" aria-hidden="true" />
+      <div className="mb-6 animate-float rounded-full bg-linear-to-br from-primary-50 to-accent-50 p-6 shadow-lg">
+        <Icon className="h-16 w-16 text-primary-600" aria-hidden="true" />
       </div>
-      <h3 className="mb-2 text-lg font-semibold text-slate-900">{title}</h3>
+      <h3 className="mb-3 text-xl font-bold text-neutral-900">{title}</h3>
       {description && (
-        <p className="mb-6 max-w-md text-sm text-slate-600">{description}</p>
+        <p className="mb-8 max-w-md text-base text-neutral-600 text-balance">{description}</p>
       )}
       {action && (
-        <Button variant="primary" onClick={action.onClick}>
+        <Button variant="primary" onClick={action.onClick} size="lg">
           {action.label}
         </Button>
       )}

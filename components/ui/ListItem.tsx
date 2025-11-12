@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Edit2, Trash2, Check, Circle } from 'lucide-react';
+import { Edit2, Trash2, Check, Circle, AlertCircle, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface ListItemProps {
@@ -12,6 +12,7 @@ export interface ListItemProps {
   categoryColor?: string;
   done: boolean;
   description?: string;
+  priority?: 'low' | 'medium' | 'high' | null;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onToggleDone: (id: string, done: boolean) => void;
@@ -26,31 +27,66 @@ const ListItem: React.FC<ListItemProps> = ({
   categoryColor,
   done,
   description,
+  priority,
   onEdit,
   onDelete,
   onToggleDone,
   className,
 }) => {
+  // Priority configuration
+  const priorityConfig = {
+    high: {
+      icon: AlertCircle,
+      badge: 'badge-danger',
+      label: 'High',
+      borderColor: 'border-l-4 border-l-danger-500',
+    },
+    medium: {
+      icon: ArrowUp,
+      badge: 'badge-accent',
+      label: 'Medium',
+      borderColor: 'border-l-4 border-l-accent-500',
+    },
+    low: {
+      icon: Circle,
+      badge: 'bg-neutral-100 text-neutral-600',
+      label: 'Low',
+      borderColor: 'border-l-4 border-l-neutral-300',
+    },
+  };
+
+  const priorityStyle = priority ? priorityConfig[priority] : null;
+  const PriorityIcon = priorityStyle?.icon;
+
   return (
     <div
       className={cn(
         'group relative rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5',
         done && 'opacity-70',
+        priorityStyle?.borderColor,
         className
       )}
     >
-      {/* Top section: Category badge and done toggle */}
+      {/* Top section: Category badge, priority badge, and done toggle */}
       <div className="mb-3 flex items-start justify-between gap-2">
-        <span
-          className={cn(
-            'badge',
-            categoryColor
-              ? 'badge-primary'
-              : 'bg-neutral-100 text-neutral-700'
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              'badge',
+              categoryColor
+                ? 'badge-primary'
+                : 'bg-neutral-100 text-neutral-700'
+            )}
+          >
+            {category}
+          </span>
+          {priority && priorityStyle && (
+            <span className={cn('badge inline-flex items-center gap-1', priorityStyle.badge)}>
+              {PriorityIcon && <PriorityIcon className="h-3 w-3" />}
+              {priorityStyle.label}
+            </span>
           )}
-        >
-          {category}
-        </span>
+        </div>
         <button
           type="button"
           onClick={() => onToggleDone(id, !done)}

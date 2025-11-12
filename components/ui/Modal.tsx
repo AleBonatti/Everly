@@ -67,8 +67,8 @@ const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-sm"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -81,12 +81,15 @@ const Modal: React.FC<ModalProps> = ({
             aria-labelledby={title ? 'modal-title' : undefined}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1] // Custom easing for smooth, springy feel
+              }}
               className={cn(
-                'relative w-full rounded-lg bg-white shadow-xl',
+                'relative w-full rounded-xl bg-white shadow-2xl border border-neutral-200',
                 sizes[size],
                 className
               )}
@@ -94,11 +97,11 @@ const Modal: React.FC<ModalProps> = ({
             >
               {/* Header */}
               {(title || showCloseButton) && (
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-5">
                   {title && (
                     <h2
                       id="modal-title"
-                      className="text-lg font-semibold text-slate-900"
+                      className="text-xl font-bold text-neutral-900"
                     >
                       {title}
                     </h2>
@@ -107,7 +110,7 @@ const Modal: React.FC<ModalProps> = ({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                      className="rounded-lg p-1.5 text-neutral-400 transition-all hover:bg-neutral-100 hover:text-neutral-700 hover:rotate-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
                       aria-label="Close modal"
                     >
                       <X className="h-5 w-5" />

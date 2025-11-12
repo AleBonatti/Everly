@@ -23,6 +23,7 @@ import ListItem from '@/components/ui/ListItem';
 import Loader from '@/components/ui/Loader';
 import StatCard from '@/components/ui/StatCard';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
+import { cn } from '@/lib/utils';
 
 export default function HomePage() {
   // Fetch items from Supabase
@@ -69,6 +70,7 @@ export default function HomePage() {
   // UI State
   const [hideDone, setHideDone] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -97,9 +99,14 @@ export default function HomePage() {
       if (hideDone && item.status === 'done') return false;
       if (selectedCategories.length > 0 && !selectedCategories.includes(item.categoryId))
         return false;
+      if (selectedPriorities.length > 0) {
+        if (!item.priority || !selectedPriorities.includes(item.priority)) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [allItems, hideDone, selectedCategories]);
+  }, [allItems, hideDone, selectedCategories, selectedPriorities]);
 
   // Helper function to reset form
   const resetForm = () => {
@@ -295,19 +302,60 @@ export default function HomePage() {
               <div className="divider" />
 
               {/* Filters section */}
-              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex-1 sm:max-w-md">
-                  <MultiSelectCategoryFilter
-                    categories={categories}
-                    selectedCategories={selectedCategories}
-                    onChange={setSelectedCategories}
+              <div className="mb-6 space-y-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 sm:max-w-md">
+                    <MultiSelectCategoryFilter
+                      categories={categories}
+                      selectedCategories={selectedCategories}
+                      onChange={setSelectedCategories}
+                    />
+                  </div>
+                  <Toggle
+                    label="Hide done items"
+                    checked={hideDone}
+                    onChange={(e) => setHideDone(e.target.checked)}
                   />
                 </div>
-                <Toggle
-                  label="Hide done items"
-                  checked={hideDone}
-                  onChange={(e) => setHideDone(e.target.checked)}
-                />
+
+                {/* Priority filter */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-neutral-700">Priority:</span>
+                  {['high', 'medium', 'low'].map((priority) => (
+                    <button
+                      key={priority}
+                      type="button"
+                      onClick={() => {
+                        setSelectedPriorities((prev) =>
+                          prev.includes(priority)
+                            ? prev.filter((p) => p !== priority)
+                            : [...prev, priority]
+                        );
+                      }}
+                      className={cn(
+                        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all',
+                        selectedPriorities.includes(priority)
+                          ? priority === 'high'
+                            ? 'badge-danger ring-2 ring-danger-200'
+                            : priority === 'medium'
+                            ? 'badge-accent ring-2 ring-accent-200'
+                            : 'bg-neutral-200 text-neutral-800 ring-2 ring-neutral-300'
+                          : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                      )}
+                    >
+                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                    </button>
+                  ))}
+                  {selectedPriorities.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPriorities([])}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Add item button */}
@@ -365,6 +413,7 @@ export default function HomePage() {
                           category={getCategoryLabel(item.categoryId)}
                           done={item.status === 'done'}
                           description={item.description || undefined}
+                          priority={item.priority}
                           onEdit={openEditModal}
                           onDelete={(id) => setDeleteConfirm(id)}
                           onToggleDone={handleToggleDone}
