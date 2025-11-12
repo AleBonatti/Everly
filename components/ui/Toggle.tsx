@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { cn } from '@/lib/utils'
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface ToggleProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
-  label?: string
-  error?: string
-  helperText?: string
-  size?: 'sm' | 'md' | 'lg'
+  label?: string;
+  error?: string;
+  helperText?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
@@ -27,8 +27,9 @@ const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
     },
     ref
   ) => {
-    const toggleId = id || `toggle-${Math.random().toString(36).substring(2, 11)}`
-    const hasError = !!error
+    const toggleId =
+      id || `toggle-${Math.random().toString(36).substring(2, 11)}`;
+    const hasError = !!error;
 
     const sizes = {
       sm: {
@@ -46,7 +47,7 @@ const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
         thumb: 'h-6 w-6',
         translate: 'peer-checked:translate-x-7',
       },
-    }
+    };
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -86,7 +87,7 @@ const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
               <span
                 className={cn(
                   'block rounded-full bg-white shadow-sm transition-transform',
-                  'ml-0.5',
+                  checked ? 'ml-5.5' : 'ml-0.5',
                   sizes[size].thumb,
                   sizes[size].translate
                 )}
@@ -120,18 +121,15 @@ const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
           </p>
         )}
         {!error && helperText && (
-          <p
-            id={`${toggleId}-helper`}
-            className="text-sm text-slate-500"
-          >
+          <p id={`${toggleId}-helper`} className="text-sm text-slate-500">
             {helperText}
           </p>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Toggle.displayName = 'Toggle'
+Toggle.displayName = 'Toggle';
 
-export default Toggle
+export default Toggle;
