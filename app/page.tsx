@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Circle,
   TrendingUp,
+  ArrowUp,
 } from 'lucide-react';
 import { useItems } from '@/lib/hooks/useItems';
 import { useCategories } from '@/lib/hooks/useCategories';
@@ -28,6 +29,7 @@ import Select from '@/components/ui/Select';
 import EmptyState from '@/components/ui/EmptyState';
 import ListItem from '@/components/ui/ListItem';
 import Loader from '@/components/ui/Loader';
+import Badge from '@/components/ui/Badge';
 import StatCard from '@/components/ui/StatCard';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 import { cn } from '@/lib/utils';
@@ -344,39 +346,44 @@ export default function HomePage() {
 
                 {/* Bottom row: Priority filter */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-neutral-700">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Priority:
                   </span>
-                  {['high', 'medium', 'low'].map((priority) => (
-                    <button
-                      key={priority}
-                      type="button"
-                      onClick={() => {
-                        setSelectedPriorities((prev) =>
-                          prev.includes(priority)
-                            ? prev.filter((p) => p !== priority)
-                            : [...prev, priority]
-                        );
-                      }}
-                      className={cn(
-                        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all',
-                        selectedPriorities.includes(priority)
-                          ? priority === 'high'
-                            ? 'badge-danger ring-2 ring-danger-200'
-                            : priority === 'medium'
-                              ? 'badge-accent ring-2 ring-accent-200'
-                              : 'bg-neutral-200 text-neutral-800 ring-2 ring-neutral-300'
-                          : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                      )}
-                    >
-                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                    </button>
-                  ))}
+                  {(['high', 'medium', 'low'] as const).map((priority) => {
+                    const priorityIcons = {
+                      high: AlertCircle,
+                      medium: ArrowUp,
+                      low: Circle,
+                    };
+                    const priorityVariants = {
+                      high: 'danger' as const,
+                      medium: 'accent' as const,
+                      low: 'neutral' as const,
+                    };
+
+                    return (
+                      <Badge
+                        key={priority}
+                        text={priority.charAt(0).toUpperCase() + priority.slice(1)}
+                        variant={priorityVariants[priority]}
+                        icon={priorityIcons[priority]}
+                        selected={selectedPriorities.includes(priority)}
+                        onClick={() => {
+                          setSelectedPriorities((prev) =>
+                            prev.includes(priority)
+                              ? prev.filter((p) => p !== priority)
+                              : [...prev, priority]
+                          );
+                        }}
+                        className="cursor-pointer hover:opacity-80"
+                      />
+                    );
+                  })}
                   {selectedPriorities.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setSelectedPriorities([])}
-                      className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-500"
                     >
                       Clear
                     </button>

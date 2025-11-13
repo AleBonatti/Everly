@@ -3,6 +3,7 @@
 import React from 'react';
 import { Edit2, Trash2, Check, Circle, AlertCircle, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Badge from './Badge';
 
 export interface ListItemProps {
   id: string;
@@ -70,21 +71,16 @@ const ListItem: React.FC<ListItemProps> = ({
       {/* Top section: Category badge, priority badge, and done toggle */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={cn(
-              'badge',
-              categoryColor
-                ? 'badge-primary'
-                : 'bg-neutral-100 text-neutral-700'
-            )}
-          >
-            {category}
-          </span>
+          <Badge
+            text={category}
+            variant={categoryColor ? 'primary' : 'neutral'}
+          />
           {priority && priorityStyle && (
-            <span className={cn('badge inline-flex items-center gap-1', priorityStyle.badge)}>
-              {PriorityIcon && <PriorityIcon className="h-3 w-3" />}
-              {priorityStyle.label}
-            </span>
+            <Badge
+              text={priorityStyle.label}
+              variant={priority === 'high' ? 'danger' : priority === 'medium' ? 'accent' : 'neutral'}
+              icon={PriorityIcon}
+            />
           )}
         </div>
         <button
@@ -110,12 +106,12 @@ const ListItem: React.FC<ListItemProps> = ({
       {/* Title with optional action */}
       <h3
         className={cn(
-          'mb-2 text-base font-semibold text-neutral-900',
+          'mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-100',
           done && 'line-through'
         )}
       >
         {action && (
-          <span className="mr-1.5 text-sm font-normal text-accent-600">
+          <span className="mr-1.5 text-sm font-normal text-accent-600 dark:text-accent-400">
             {action}
           </span>
         )}
@@ -124,7 +120,7 @@ const ListItem: React.FC<ListItemProps> = ({
 
       {/* Description (if exists) */}
       {description && (
-        <p className="mb-3 line-clamp-2 text-sm text-neutral-600">
+        <p className="mb-3 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
           {description}
         </p>
       )}
@@ -136,7 +132,7 @@ const ListItem: React.FC<ListItemProps> = ({
           onClick={() => onEdit(id)}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-            'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
+            'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
           )}
         >
@@ -148,7 +144,7 @@ const ListItem: React.FC<ListItemProps> = ({
           onClick={() => onDelete(id)}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-            'text-danger-600 hover:bg-danger-50 hover:text-danger-700',
+            'text-danger-600 hover:bg-danger-50 hover:text-danger-700 dark:text-danger-400 dark:hover:bg-danger-950 dark:hover:text-danger-300',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
           )}
         >
