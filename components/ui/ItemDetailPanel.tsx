@@ -35,6 +35,7 @@ export interface ItemDetailPanelProps {
     note?: string | null;
     targetDate?: string | null;
     createdAt?: string;
+    updatedAt?: string;
   } | null;
   onEdit: () => void;
   onDelete: () => void;
@@ -243,12 +244,19 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
                 </div>
               )}
 
-              {/* Created date */}
-              {item.createdAt && (
-                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Created on {formatDate(item.createdAt)}
-                  </p>
+              {/* Metadata: Created and Updated dates */}
+              {(item.createdAt || item.updatedAt) && (
+                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-1">
+                  {item.createdAt && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Created on {formatDate(item.createdAt)}
+                    </p>
+                  )}
+                  {item.updatedAt && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Last updated on {formatDate(item.updatedAt)}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

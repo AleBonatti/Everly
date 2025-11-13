@@ -650,6 +650,7 @@ export default function HomePage() {
                 note: detailPanelItem.note,
                 targetDate: detailPanelItem.targetDate,
                 createdAt: detailPanelItem.createdAt,
+                updatedAt: detailPanelItem.updatedAt,
               }
             : null
         }
