@@ -33,11 +33,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const hasError = !!error
 
     const baseStyles =
-      'block rounded-lg border bg-white px-4 py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+      'block rounded-lg border bg-white px-4 py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-900 dark:focus-visible:ring-primary-500'
 
     const stateStyles = hasError
-      ? 'border-red-500 text-red-900 placeholder:text-red-300 focus-visible:ring-red-500'
-      : 'border-slate-300 text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-sky-500'
+      ? 'border-red-500 text-red-900 placeholder:text-red-300 focus-visible:ring-red-500 dark:border-red-400 dark:text-red-100'
+      : 'border-slate-300 text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-sky-500 dark:border-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500'
 
     const resizeStyles = {
       none: 'resize-none',
@@ -52,7 +52,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <label
             htmlFor={textareaId}
             className={cn(
-              'text-sm font-medium text-slate-700',
+              'text-sm font-medium text-slate-700 dark:text-neutral-300',
               disabled && 'opacity-50'
             )}
           >
@@ -99,7 +99,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {!error && helperText && (
           <p
             id={`${textareaId}-helper`}
-            className="text-sm text-slate-500"
+            className="text-sm text-slate-500 dark:text-neutral-400"
           >
             {helperText}
           </p>

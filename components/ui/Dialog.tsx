@@ -53,7 +53,7 @@ const Dialog: React.FC<DialogProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm dark:bg-neutral-950/80"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -72,7 +72,7 @@ const Dialog: React.FC<DialogProps> = ({
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
               className={cn(
-                'relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl'
+                'relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900'
               )}
               onClick={(e) => e.stopPropagation()}
             >
@@ -84,14 +84,14 @@ const Dialog: React.FC<DialogProps> = ({
                 <div className="flex-1">
                   <h2
                     id="dialog-title"
-                    className="text-lg font-semibold text-slate-900"
+                    className="text-lg font-semibold text-slate-900 dark:text-neutral-100"
                   >
                     {title}
                   </h2>
                   {description && (
                     <p
                       id="dialog-description"
-                      className="mt-2 text-sm text-slate-600"
+                      className="mt-2 text-sm text-slate-600 dark:text-neutral-400"
                     >
                       {description}
                     </p>

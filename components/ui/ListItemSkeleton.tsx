@@ -11,7 +11,7 @@ const ListItemSkeleton: React.FC<ListItemSkeletonProps> = ({ className }) => {
   return (
     <div
       className={cn(
-        'rounded-xl border border-neutral-200 bg-white p-5 shadow-sm',
+        'rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900',
         className
       )}
     >
