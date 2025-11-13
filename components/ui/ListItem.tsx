@@ -40,19 +40,19 @@ const ListItem: React.FC<ListItemProps> = ({
       icon: AlertCircle,
       badge: 'badge-danger',
       label: 'High',
-      borderColor: 'border-l-4 border-l-danger-500',
+      borderColor: 'border-l-4 border-l-danger-500 dark:border-l-danger-400',
     },
     medium: {
       icon: ArrowUp,
       badge: 'badge-accent',
       label: 'Medium',
-      borderColor: 'border-l-4 border-l-accent-500',
+      borderColor: 'border-l-4 border-l-accent-500 dark:border-l-accent-400',
     },
     low: {
       icon: Circle,
       badge: 'bg-neutral-100 text-neutral-600',
       label: 'Low',
-      borderColor: 'border-l-4 border-l-neutral-300',
+      borderColor: 'border-l-4 border-l-neutral-300 dark:border-l-neutral-600',
     },
   };
 
