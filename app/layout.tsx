@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { inter } from '@/lib/fonts'
+import { ThemeProvider } from '@/lib/contexts/ThemeContext'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

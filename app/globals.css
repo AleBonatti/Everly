@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand Colors */
+  /* Brand Colors - Light Mode */
   --color-primary-50: #f5f3ff;
   --color-primary-100: #ede9fe;
   --color-primary-200: #ddd6fe;
@@ -63,6 +63,69 @@
   --color-neutral-950: #0a0a0a;
 }
 
+@theme dark {
+  /* Brand Colors - Dark Mode (adjusted for better contrast) */
+  --color-primary-50: #0d0840;
+  --color-primary-100: #150e5c;
+  --color-primary-200: #1a1280;
+  --color-primary-300: #1e16a8;
+  --color-primary-400: #251ad1;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #a78bfa;
+  --color-primary-700: #c4b5fd;
+  --color-primary-800: #ddd6fe;
+  --color-primary-900: #ede9fe;
+  --color-primary-950: #f5f3ff;
+
+  --color-accent-50: #4a2804;
+  --color-accent-100: #7c4a06;
+  --color-accent-200: #9c5a02;
+  --color-accent-300: #c77100;
+  --color-accent-400: #ea8c00;
+  --color-accent-500: #fea703;
+  --color-accent-600: #fb923c;
+  --color-accent-700: #fdba74;
+  --color-accent-800: #fed7aa;
+  --color-accent-900: #ffedd5;
+  --color-accent-950: #fff7ed;
+
+  --color-danger-50: #4a0800;
+  --color-danger-100: #7f0d00;
+  --color-danger-200: #9b1000;
+  --color-danger-300: #c21400;
+  --color-danger-400: #e61800;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #f87171;
+  --color-danger-700: #fca5a5;
+  --color-danger-800: #fecaca;
+  --color-danger-900: #fee2e2;
+  --color-danger-950: #fef2f2;
+
+  --color-success-50: #052e16;
+  --color-success-100: #14532d;
+  --color-success-200: #166534;
+  --color-success-300: #15803d;
+  --color-success-400: #16a34a;
+  --color-success-500: #22c55e;
+  --color-success-600: #4ade80;
+  --color-success-700: #86efac;
+  --color-success-800: #bbf7d0;
+  --color-success-900: #dcfce7;
+  --color-success-950: #f0fdf4;
+
+  --color-neutral-50: #0a0a0a;
+  --color-neutral-100: #171717;
+  --color-neutral-200: #262626;
+  --color-neutral-300: #404040;
+  --color-neutral-400: #525252;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #a3a3a3;
+  --color-neutral-700: #d4d4d4;
+  --color-neutral-800: #e5e5e5;
+  --color-neutral-900: #f5f5f5;
+  --color-neutral-950: #fafafa;
+}
+
 @layer base {
   :root {
     /* Color System for custom utilities */
@@ -105,6 +168,50 @@
     --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
     --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
     --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  .dark {
+    /* Color System for dark mode */
+    --primary: 139 92 246; /* Lighter primary for better contrast */
+    --primary-light: 196 181 253;
+    --primary-dark: 109 40 217;
+
+    --accent: 251 146 60; /* Lighter accent */
+    --accent-light: 253 186 116;
+    --accent-dark: 234 88 12;
+
+    --danger: 248 113 113; /* Lighter danger */
+    --danger-light: 252 165 165;
+    --danger-dark: 220 38 38;
+
+    --success: 74 222 128; /* Lighter success */
+    --success-light: 134 239 172;
+    --success-dark: 34 197 94;
+
+    /* Inverted neutral colors */
+    --neutral-50: 10 10 10;
+    --neutral-100: 23 23 23;
+    --neutral-200: 38 38 38;
+    --neutral-300: 64 64 64;
+    --neutral-400: 115 115 115;
+    --neutral-500: 163 163 163;
+    --neutral-600: 212 212 212;
+    --neutral-700: 229 229 229;
+    --neutral-800: 245 245 245;
+    --neutral-900: 250 250 250;
+
+    --background: 10 10 10;
+    --foreground: 250 250 250;
+
+    /* Semantic Colors */
+    --card-bg: 23 23 23;
+    --card-border: 38 38 38;
+
+    /* Effects */
+    --shadow-color: 0 0 0;
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
 
   * {
