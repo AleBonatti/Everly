@@ -1,7 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Edit2, Trash2, Check, Circle, AlertCircle, ArrowUp } from 'lucide-react';
+import {
+  Edit2,
+  Trash2,
+  Check,
+  Circle,
+  AlertCircle,
+  ArrowUp,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Badge from './Badge';
 
@@ -50,9 +57,9 @@ const ListItem: React.FC<ListItemProps> = ({
     },
     low: {
       icon: Circle,
-      badge: 'bg-neutral-100 text-neutral-600',
+      badge: 'bg-success-100 text-success-600',
       label: 'Low',
-      borderColor: 'border-l-4 border-l-neutral-300 dark:border-l-neutral-600',
+      borderColor: 'border-l-4 border-l-success-300 dark:border-l-success-600',
     },
   };
 
@@ -78,7 +85,13 @@ const ListItem: React.FC<ListItemProps> = ({
           {priority && priorityStyle && (
             <Badge
               text={priorityStyle.label}
-              variant={priority === 'high' ? 'danger' : priority === 'medium' ? 'accent' : 'neutral'}
+              variant={
+                priority === 'high'
+                  ? 'danger'
+                  : priority === 'medium'
+                    ? 'accent'
+                    : 'neutral'
+              }
               icon={PriorityIcon}
             />
           )}
@@ -106,8 +119,7 @@ const ListItem: React.FC<ListItemProps> = ({
       {/* Title with optional action */}
       <h3
         className={cn(
-          'mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-100',
-          done && 'line-through'
+          'mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-100'
         )}
       >
         {action && (
@@ -115,7 +127,7 @@ const ListItem: React.FC<ListItemProps> = ({
             {action}
           </span>
         )}
-        {title}
+        <span className={cn(done && 'line-through')}>{title}</span>
       </h3>
 
       {/* Description (if exists) */}
