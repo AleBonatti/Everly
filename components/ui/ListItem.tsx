@@ -2,8 +2,6 @@
 
 import React from 'react';
 import {
-  Edit2,
-  Trash2,
   Check,
   Circle,
   AlertCircle,
@@ -21,8 +19,7 @@ export interface ListItemProps {
   done: boolean;
   description?: string;
   priority?: 'low' | 'medium' | 'high' | null;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onClick: (id: string) => void;
   onToggleDone: (id: string, done: boolean) => void;
   className?: string;
 }
@@ -36,8 +33,7 @@ const ListItem: React.FC<ListItemProps> = ({
   done,
   description,
   priority,
-  onEdit,
-  onDelete,
+  onClick,
   onToggleDone,
   className,
 }) => {
@@ -68,12 +64,21 @@ const ListItem: React.FC<ListItemProps> = ({
 
   return (
     <div
+      onClick={() => onClick(id)}
       className={cn(
-        'group relative rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:border-neutral-800 dark:bg-neutral-900',
+        'group relative rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer dark:border-neutral-800 dark:bg-neutral-900',
         done && 'opacity-70',
         priorityStyle?.borderColor,
         className
       )}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(id);
+        }
+      }}
     >
       {/* Top section: Category badge, priority badge, and done toggle */}
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -98,7 +103,10 @@ const ListItem: React.FC<ListItemProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => onToggleDone(id, !done)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleDone(id, !done);
+          }}
           className={cn(
             'flex-0 rounded-full p-1 transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -132,38 +140,10 @@ const ListItem: React.FC<ListItemProps> = ({
 
       {/* Description (if exists) */}
       {description && (
-        <p className="mb-3 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
           {description}
         </p>
       )}
-
-      {/* Action buttons */}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onEdit(id)}
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-            'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
-          )}
-        >
-          <Edit2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Edit
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(id)}
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-            'text-danger-600 hover:bg-danger-50 hover:text-danger-700 dark:text-danger-400 dark:hover:bg-danger-950 dark:hover:text-danger-300',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
-          )}
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Delete
-        </button>
-      </div>
     </div>
   );
 };

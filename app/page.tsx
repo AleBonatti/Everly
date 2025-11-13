@@ -28,6 +28,7 @@ import MultiSelectCategoryFilter from '@/components/ui/MultiSelectCategoryFilter
 import Select from '@/components/ui/Select';
 import EmptyState from '@/components/ui/EmptyState';
 import ListItem from '@/components/ui/ListItem';
+import ItemDetailPanel from '@/components/ui/ItemDetailPanel';
 import Loader from '@/components/ui/Loader';
 import Badge from '@/components/ui/Badge';
 import StatCard from '@/components/ui/StatCard';
@@ -84,6 +85,7 @@ export default function HomePage() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detailPanelItem, setDetailPanelItem] = useState<Item | null>(null);
 
   // Unified form state (used for both add and edit)
   const [formTitle, setFormTitle] = useState('');
@@ -238,6 +240,35 @@ export default function HomePage() {
     return action?.name || null;
   };
 
+  // Handle opening detail panel
+  const handleItemClick = (id: string) => {
+    const item = allItems.find((i) => i.id === id);
+    if (item) {
+      setDetailPanelItem(item);
+    }
+  };
+
+  // Handle close detail panel
+  const closeDetailPanel = () => {
+    setDetailPanelItem(null);
+  };
+
+  // Handle edit from detail panel
+  const handleEditFromPanel = () => {
+    if (detailPanelItem) {
+      openEditModal(detailPanelItem.id);
+      closeDetailPanel();
+    }
+  };
+
+  // Handle delete from detail panel
+  const handleDeleteFromPanel = () => {
+    if (detailPanelItem) {
+      setDeleteConfirm(detailPanelItem.id);
+      closeDetailPanel();
+    }
+  };
+
   return (
     <AuthenticatedLayout>
       {/* Main content */}
@@ -364,7 +395,9 @@ export default function HomePage() {
                     return (
                       <Badge
                         key={priority}
-                        text={priority.charAt(0).toUpperCase() + priority.slice(1)}
+                        text={
+                          priority.charAt(0).toUpperCase() + priority.slice(1)
+                        }
                         variant={priorityVariants[priority]}
                         icon={priorityIcons[priority]}
                         selected={selectedPriorities.includes(priority)}
@@ -437,8 +470,7 @@ export default function HomePage() {
                           done={item.status === 'done'}
                           description={item.description || undefined}
                           priority={item.priority}
-                          onEdit={openEditModal}
-                          onDelete={(id) => setDeleteConfirm(id)}
+                          onClick={handleItemClick}
                           onToggleDone={handleToggleDone}
                         />
                       </motion.div>
@@ -572,7 +604,7 @@ export default function HomePage() {
         </div>
 
         {/* Actions - Fixed at bottom */}
-        <div className="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4">
+        <div className="mt-6 flex justify-end gap-3 pt-4">
           <Button variant="ghost" onClick={closeModal} disabled={isSubmitting}>
             Cancel
           </Button>
@@ -597,6 +629,32 @@ export default function HomePage() {
         type="warning"
         confirmText="Delete"
         confirmVariant="danger"
+      />
+
+      {/* Item Detail Panel */}
+      <ItemDetailPanel
+        open={!!detailPanelItem}
+        onClose={closeDetailPanel}
+        item={
+          detailPanelItem
+            ? {
+                id: detailPanelItem.id,
+                title: detailPanelItem.title,
+                action: getActionLabel(detailPanelItem.actionId),
+                category: getCategoryLabel(detailPanelItem.categoryId),
+                done: detailPanelItem.status === 'done',
+                description: detailPanelItem.description,
+                priority: detailPanelItem.priority,
+                url: detailPanelItem.url,
+                location: detailPanelItem.location,
+                note: detailPanelItem.note,
+                targetDate: detailPanelItem.targetDate,
+                createdAt: detailPanelItem.createdAt,
+              }
+            : null
+        }
+        onEdit={handleEditFromPanel}
+        onDelete={handleDeleteFromPanel}
       />
     </AuthenticatedLayout>
   );
