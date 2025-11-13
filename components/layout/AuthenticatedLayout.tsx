@@ -39,7 +39,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
   return (
     <UserProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <Header isAuthenticated={true} onLogout={handleLogout} />
         <main>{children}</main>
       </div>

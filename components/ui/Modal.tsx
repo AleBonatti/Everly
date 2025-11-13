@@ -89,7 +89,7 @@ const Modal: React.FC<ModalProps> = ({
                 ease: [0.16, 1, 0.3, 1] // Custom easing for smooth, springy feel
               }}
               className={cn(
-                'relative w-full rounded-xl bg-white shadow-2xl border border-neutral-200',
+                'relative w-full rounded-xl bg-white shadow-2xl border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800',
                 sizes[size],
                 className
               )}

@@ -61,7 +61,7 @@ const ListItem: React.FC<ListItemProps> = ({
   return (
     <div
       className={cn(
-        'group relative rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5',
+        'group relative rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:border-neutral-800 dark:bg-neutral-900',
         done && 'opacity-70',
         priorityStyle?.borderColor,
         className

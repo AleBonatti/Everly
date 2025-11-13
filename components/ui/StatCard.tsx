@@ -44,10 +44,10 @@ const StatCard: React.FC<StatCardProps> = ({
       textColor: 'text-success-900',
     },
     neutral: {
-      bg: 'bg-white',
-      iconBg: 'bg-neutral-100',
-      iconColor: 'text-neutral-600',
-      textColor: 'text-neutral-900',
+      bg: 'bg-white dark:bg-neutral-900',
+      iconBg: 'bg-neutral-100 dark:bg-neutral-800',
+      iconColor: 'text-neutral-600 dark:text-neutral-400',
+      textColor: 'text-neutral-900 dark:text-neutral-100',
     },
   };
 
@@ -56,14 +56,14 @@ const StatCard: React.FC<StatCardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-xl border border-neutral-200 p-6 shadow-sm transition-all hover:shadow-md',
+        'rounded-xl border border-neutral-200 p-6 shadow-sm transition-all hover:shadow-md dark:border-neutral-800',
         variantStyles.bg,
         className
       )}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-neutral-600">{title}</p>
+          <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{title}</p>
           <div className="mt-2 flex items-baseline gap-2">
             <p
               className={cn(
