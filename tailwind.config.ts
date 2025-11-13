@@ -8,10 +8,12 @@ import type { Config } from 'tailwindcss'
  *
  * This file is maintained for:
  * - Content paths (required)
+ * - Dark mode strategy (class-based)
  * - PostCSS plugins (if needed)
  * - Legacy compatibility
  */
 const config: Config = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
