@@ -9,7 +9,7 @@ import { useActions } from '@/lib/hooks/useActions';
 import { useItemStats } from '@/lib/hooks/useItemStats';
 import { useItemActions } from '@/lib/hooks/useItemActions';
 import { useItemFilters } from '@/lib/hooks/useItemFilters';
-import { getCategoryLabel, getActionLabel } from '@/lib/utils/item-helpers';
+import { getCategoryLabel, getCategoryIcon, getActionLabel } from '@/lib/utils/item-helpers';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -371,6 +371,7 @@ export default function HomePage() {
                 title: itemActions.detailPanelItem.title,
                 action: getActionLabel(itemActions.detailPanelItem.actionId, dbActions),
                 category: getCategoryLabel(itemActions.detailPanelItem.categoryId, dbCategories),
+                categoryIcon: getCategoryIcon(itemActions.detailPanelItem.categoryId, dbCategories),
                 done: itemActions.detailPanelItem.status === 'done',
                 description: itemActions.detailPanelItem.description,
                 priority: itemActions.detailPanelItem.priority,

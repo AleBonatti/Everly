@@ -6,8 +6,10 @@ import {
   Circle,
   AlertCircle,
   ArrowUp,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getIconComponent } from '@/lib/utils/icon-utils';
 import Badge from './Badge';
 
 export interface ListItemProps {
@@ -15,7 +17,7 @@ export interface ListItemProps {
   title: string;
   action?: string | null;
   category: string;
-  categoryColor?: string;
+  categoryIcon?: string | null;
   done: boolean;
   description?: string;
   priority?: 'low' | 'medium' | 'high' | null;
@@ -29,7 +31,7 @@ const ListItem: React.FC<ListItemProps> = ({
   title,
   action,
   category,
-  categoryColor,
+  categoryIcon,
   done,
   description,
   priority,
@@ -80,13 +82,21 @@ const ListItem: React.FC<ListItemProps> = ({
         }
       }}
     >
-      {/* Top section: Category badge, priority badge, and done toggle */}
+      {/* Top section: Category icon, priority badge, and done toggle */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            text={category}
-            variant={categoryColor ? 'primary' : 'neutral'}
-          />
+          {(() => {
+            const CategoryIcon = getIconComponent(categoryIcon);
+            const IconComponent = CategoryIcon || Package;
+            return (
+              <div className="flex items-center gap-1.5 rounded-md bg-primary-50 px-2 py-1 dark:bg-primary-900/20">
+                <IconComponent className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
+                  {category}
+                </span>
+              </div>
+            );
+          })()}
           {priority && priorityStyle && (
             <Badge
               text={priorityStyle.label}

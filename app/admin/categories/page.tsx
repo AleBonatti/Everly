@@ -13,6 +13,7 @@ import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import IconPicker from '@/components/ui/IconPicker'
 import Loader from '@/components/ui/Loader'
 import EmptyState from '@/components/ui/EmptyState'
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout'
@@ -36,6 +37,7 @@ export default function AdminCategoriesPage() {
 
   // Form state
   const [formName, setFormName] = useState('')
+  const [formIcon, setFormIcon] = useState<string>('')
   const [formType, setFormType] = useState<CategoryType>(CATEGORY_TYPES.CUSTOM)
   const [formDisplayOrder, setFormDisplayOrder] = useState('0')
 
@@ -46,6 +48,7 @@ export default function AdminCategoriesPage() {
   // Reset form
   const resetForm = () => {
     setFormName('')
+    setFormIcon('')
     setFormType(CATEGORY_TYPES.CUSTOM)
     setFormDisplayOrder('0')
     setEditingCategory(null)
@@ -61,6 +64,7 @@ export default function AdminCategoriesPage() {
   const openEditModal = (category: AdminCategory) => {
     setEditingCategory(category)
     setFormName(category.name)
+    setFormIcon(category.icon || '')
     setFormType(category.type as CategoryType)
     setFormDisplayOrder(category.displayOrder.toString())
     setIsModalOpen(true)
@@ -83,6 +87,7 @@ export default function AdminCategoriesPage() {
         // Update existing category
         await updateCategory(editingCategory.id, {
           name: formName.trim(),
+          icon: formIcon || null,
           type: formType,
           displayOrder: parseInt(formDisplayOrder) || 0,
         })
@@ -90,6 +95,7 @@ export default function AdminCategoriesPage() {
         // Create new category
         const input: CreateCategoryInput = {
           name: formName.trim(),
+          icon: formIcon || null,
           type: formType,
           displayOrder: parseInt(formDisplayOrder) || 0,
         }
@@ -289,6 +295,12 @@ export default function AdminCategoriesPage() {
               fullWidth
             />
 
+            <IconPicker
+              label="Icon"
+              value={formIcon}
+              onChange={setFormIcon}
+            />
+
             <Select
               label="Type"
               value={formType}
@@ -310,7 +322,7 @@ export default function AdminCategoriesPage() {
               fullWidth
             />
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Lower numbers appear first. Default categories cannot be deleted.
             </p>
           </div>

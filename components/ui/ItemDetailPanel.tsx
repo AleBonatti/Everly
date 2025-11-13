@@ -13,8 +13,10 @@ import {
   AlertCircle,
   ArrowUp,
   Circle,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getIconComponent } from '@/lib/utils/icon-utils';
 import Badge from './Badge';
 import Button from './Button';
 
@@ -26,7 +28,7 @@ export interface ItemDetailPanelProps {
     title: string;
     action?: string | null;
     category: string;
-    categoryColor?: string;
+    categoryIcon?: string | null;
     done: boolean;
     description?: string | null;
     priority?: 'low' | 'medium' | 'high' | null;
@@ -135,12 +137,20 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Status and badges */}
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  text={item.category}
-                  variant={item.categoryColor ? 'primary' : 'neutral'}
-                />
+              {/* Category icon and name */}
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const CategoryIcon = getIconComponent(item.categoryIcon);
+                  const IconComponent = CategoryIcon || Package;
+                  return (
+                    <div className="flex items-center gap-3 rounded-lg bg-primary-50 px-4 py-2 dark:bg-primary-900/20">
+                      <IconComponent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                      <span className="text-lg font-semibold text-primary-700 dark:text-primary-300">
+                        {item.category}
+                      </span>
+                    </div>
+                  );
+                })()}
                 {item.priority && priorityStyle && (
                   <Badge
                     text={priorityStyle.label}

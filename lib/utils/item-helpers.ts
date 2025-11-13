@@ -13,6 +13,17 @@ export function getCategoryLabel(
 }
 
 /**
+ * Get the icon for a category by its ID
+ */
+export function getCategoryIcon(
+  categoryId: string,
+  categories: Category[]
+): string | null {
+  const category = categories.find((c) => c.id === categoryId);
+  return category?.icon || null;
+}
+
+/**
  * Get the label for an action by its ID
  */
 export function getActionLabel(

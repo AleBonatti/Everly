@@ -9,6 +9,7 @@
 export interface Category {
   id: string
   name: string
+  icon?: string | null
   type: 'default' | 'custom'
   displayOrder: number
   createdAt: string
@@ -22,6 +23,7 @@ function transformApiCategory(apiCategory: any): Category {
   return {
     id: apiCategory.id,
     name: apiCategory.name,
+    icon: apiCategory.icon || null,
     type: apiCategory.type,
     displayOrder: apiCategory.display_order || apiCategory.displayOrder || 0,
     createdAt: apiCategory.created_at || apiCategory.createdAt,
