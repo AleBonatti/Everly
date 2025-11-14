@@ -20,8 +20,8 @@ const Loader = React.forwardRef<HTMLDivElement, LoaderProps>(
     };
 
     const variants = {
-      primary: 'text-sky-500',
-      secondary: 'text-slate-400',
+      primary: 'text-primary-500 dark:text-primary-400',
+      secondary: 'text-neutral-400 dark:text-neutral-500',
     };
 
     const textSizes = {
@@ -44,7 +44,7 @@ const Loader = React.forwardRef<HTMLDivElement, LoaderProps>(
           aria-hidden="true"
         />
         {text && (
-          <span className={cn('font-medium text-slate-700', textSizes[size])}>
+          <span className={cn('font-medium text-neutral-700 dark:text-neutral-300', textSizes[size])}>
             {text}
           </span>
         )}
