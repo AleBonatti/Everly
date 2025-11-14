@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ListTodo, LogOut, Users, Key, FolderTree, Home, Zap, Moon, Sun } from 'lucide-react';
 import Container from './Container';
 import Button from '../ui/Button';
+import Tooltip from '../ui/Tooltip';
 import { useUser } from '@/lib/contexts/UserContext';
 import { useTheme } from '@/lib/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -35,86 +36,100 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
           {/* Navigation */}
           {isAuthenticated && (
             <nav className="flex items-center gap-2">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    pathname === '/' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
-                  )}
-                >
-                  <Home className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Button>
-              </Link>
+              <Tooltip content="Dashboard">
+                <Link href="/">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      pathname === '/' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                    )}
+                  >
+                    <Home className="h-4 w-4" />
+                    <span className="hidden sm:inline">Dashboard</span>
+                  </Button>
+                </Link>
+              </Tooltip>
               {isAdmin === true && (
                 <>
-                  <Link href="/admin/categories">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        pathname === '/admin/categories' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
-                      )}
-                    >
-                      <FolderTree className="h-4 w-4" />
-                      <span className="hidden sm:inline">Categories</span>
-                    </Button>
-                  </Link>
-                  <Link href="/admin/actions">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        pathname === '/admin/actions' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
-                      )}
-                    >
-                      <Zap className="h-4 w-4" />
-                      <span className="hidden sm:inline">Actions</span>
-                    </Button>
-                  </Link>
-                  <Link href="/admin/users">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        pathname === '/admin/users' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
-                      )}
-                    >
-                      <Users className="h-4 w-4" />
-                      <span className="hidden sm:inline">Users</span>
-                    </Button>
-                  </Link>
+                  <Tooltip content="Categories">
+                    <Link href="/admin/categories">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          pathname === '/admin/categories' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                        )}
+                      >
+                        <FolderTree className="h-4 w-4" />
+                        <span className="hidden sm:inline">Categories</span>
+                      </Button>
+                    </Link>
+                  </Tooltip>
+                  <Tooltip content="Actions">
+                    <Link href="/admin/actions">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          pathname === '/admin/actions' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                        )}
+                      >
+                        <Zap className="h-4 w-4" />
+                        <span className="hidden sm:inline">Actions</span>
+                      </Button>
+                    </Link>
+                  </Tooltip>
+                  <Tooltip content="Users">
+                    <Link href="/admin/users">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          pathname === '/admin/users' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                        )}
+                      >
+                        <Users className="h-4 w-4" />
+                        <span className="hidden sm:inline">Users</span>
+                      </Button>
+                    </Link>
+                  </Tooltip>
                 </>
               )}
-              <Link href="/account">
+              <Tooltip content="Account">
+                <Link href="/account">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      pathname === '/account' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                    )}
+                  >
+                    <Key className="h-4 w-4" />
+                    <span className="hidden sm:inline">Account</span>
+                  </Button>
+                </Link>
+              </Tooltip>
+              <Tooltip content={theme === 'light' ? 'Dark mode' : 'Light mode'}>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={cn(
-                    pathname === '/account' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
-                  )}
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
                 >
-                  <Key className="h-4 w-4" />
-                  <span className="hidden sm:inline">Account</span>
+                  {theme === 'light' ? (
+                    <Moon className="h-4 w-4" />
+                  ) : (
+                    <Sun className="h-4 w-4" />
+                  )}
                 </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-              >
-                {theme === 'light' ? (
-                  <Moon className="h-4 w-4" />
-                ) : (
-                  <Sun className="h-4 w-4" />
-                )}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={onLogout}>
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
+              </Tooltip>
+              <Tooltip content="Logout">
+                <Button variant="ghost" size="sm" onClick={onLogout}>
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
+              </Tooltip>
             </nav>
           )}
         </div>

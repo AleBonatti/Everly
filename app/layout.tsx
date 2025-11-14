@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
+import ToastProvider from '@/components/providers/ToastProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -42,7 +43,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <ToastProvider />
+        </ThemeProvider>
       </body>
     </html>
   )

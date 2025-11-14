@@ -110,18 +110,34 @@ export function useItems(options: ListItemsOptions = {}): UseItemsResult {
 
   // Toggle item status
   const toggleStatus = useCallback(async (id: string): Promise<Item> => {
+    // Store previous state for rollback
+    const previousItems = items
+
     try {
       setError(null)
+
+      // Optimistic update - immediately toggle in UI
+      setItems(prev => prev.map(item =>
+        item.id === id
+          ? { ...item, status: item.status === 'done' ? 'todo' : 'done' }
+          : item
+      ))
+
+      // Then sync with server
       const updatedItem = await toggleItemStatus(id)
-      // Optimistically update local state
+
+      // Update with server response
       setItems(prev => prev.map(item => item.id === id ? updatedItem : item))
+
       return updatedItem
     } catch (err) {
+      // Rollback on error
+      setItems(previousItems)
       const errorMessage = err instanceof Error ? err.message : 'Failed to toggle item status'
       setError(errorMessage)
       throw err
     }
-  }, [])
+  }, [items])
 
   return {
     items,

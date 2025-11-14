@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Item } from '@/lib/services/items';
+import { useToast } from './useToast';
+import { useUnsavedChanges } from './useUnsavedChanges';
 
 export interface ItemFormData {
   categoryId?: string;
@@ -29,6 +31,7 @@ export function useItemActions({
   toggleStatus,
   allItems,
 }: UseItemActionsProps) {
+  const toast = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -47,6 +50,53 @@ export function useItemActions({
   const [formNote, setFormNote] = useState('');
   const [formTargetDate, setFormTargetDate] = useState('');
 
+  // Detect unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    if (!isModalOpen) return false;
+
+    if (editingItem) {
+      // Check if any field has been modified from the original item
+      return (
+        formTitle !== editingItem.title ||
+        formCategory !== editingItem.categoryId ||
+        (formAction || '') !== (editingItem.actionId || '') ||
+        (formDescription || '') !== (editingItem.description || '') ||
+        formStatus !== editingItem.status ||
+        (formPriority || '') !== (editingItem.priority || '') ||
+        (formUrl || '') !== (editingItem.url || '') ||
+        (formLocation || '') !== (editingItem.location || '') ||
+        (formNote || '') !== (editingItem.note || '') ||
+        (formTargetDate || '') !== (editingItem.targetDate || '')
+      );
+    } else {
+      // For new items, check if any field has been filled
+      return !!(
+        formTitle.trim() ||
+        formCategory ||
+        formAction ||
+        formDescription.trim() ||
+        formPriority ||
+        formUrl.trim() ||
+        formLocation.trim() ||
+        formNote.trim() ||
+        formTargetDate
+      );
+    }
+  }, [
+    isModalOpen,
+    editingItem,
+    formTitle,
+    formCategory,
+    formAction,
+    formDescription,
+    formStatus,
+    formPriority,
+    formUrl,
+    formLocation,
+    formNote,
+    formTargetDate,
+  ]);
+
   // Reset form
   const resetForm = () => {
     setFormTitle('');
@@ -61,6 +111,15 @@ export function useItemActions({
     setFormTargetDate('');
     setEditingItem(null);
   };
+
+  // Actual close function (without confirmation)
+  const performClose = () => {
+    setIsModalOpen(false);
+    resetForm();
+  };
+
+  // Use unsaved changes hook
+  const { confirmClose } = useUnsavedChanges(hasUnsavedChanges, performClose);
 
   // Open modal for adding new item
   const openAddModal = () => {
@@ -87,10 +146,9 @@ export function useItemActions({
     }
   };
 
-  // Close modal
+  // Close modal with unsaved changes confirmation
   const closeModal = () => {
-    setIsModalOpen(false);
-    resetForm();
+    confirmClose();
   };
 
   // Submit form (add or edit)
@@ -112,6 +170,7 @@ export function useItemActions({
           note: formNote.trim() || null,
           targetDate: formTargetDate || null,
         });
+        toast.success('Item updated successfully');
       } else {
         await createNewItem({
           categoryId: formCategory,
@@ -125,11 +184,14 @@ export function useItemActions({
           note: formNote.trim() || null,
           targetDate: formTargetDate || null,
         });
+        toast.success('Item created successfully');
       }
 
-      closeModal();
+      // Close without confirmation since we just saved
+      performClose();
     } catch (err) {
       console.error('Failed to save item:', err);
+      toast.error(editingItem ? 'Failed to update item' : 'Failed to create item');
     } finally {
       setIsSubmitting(false);
     }
@@ -140,8 +202,10 @@ export function useItemActions({
     try {
       await deleteExistingItem(id);
       setDeleteConfirm(null);
+      toast.success('Item deleted successfully');
     } catch (err) {
       console.error('Failed to delete item:', err);
+      toast.error('Failed to delete item');
     }
   };
 
@@ -151,6 +215,7 @@ export function useItemActions({
       await toggleStatus(id);
     } catch (err) {
       console.error('Failed to toggle item status:', err);
+      toast.error('Failed to toggle item status');
     }
   };
 
