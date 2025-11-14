@@ -142,3 +142,23 @@ export async function deleteAction(actionId: string): Promise<void> {
     throw new Error(error.error || 'Failed to delete action')
   }
 }
+
+/**
+ * Batch reorder actions (admin only)
+ */
+export async function reorderActions(
+  items: Array<{ id: string; displayOrder: number }>
+): Promise<void> {
+  const response = await fetch('/api/admin/actions/reorder', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ items }),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to reorder actions' }))
+    throw new Error(error.error || 'Failed to reorder actions')
+  }
+}

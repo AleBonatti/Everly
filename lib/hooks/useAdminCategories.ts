@@ -10,6 +10,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  reorderCategories,
   type AdminCategory,
   type CreateCategoryInput,
   type UpdateCategoryInput,
@@ -104,6 +105,31 @@ export function useAdminCategories() {
     }
   }, [categories])
 
+  // Reorder categories (batch update)
+  const reorderCategoriesList = useCallback(async (reorderedCategories: AdminCategory[]) => {
+    // Store previous state for rollback
+    const previousCategories = categories
+
+    try {
+      // Optimistic update - immediately update the UI
+      setCategories(reorderedCategories)
+
+      // Prepare batch update payload
+      const items = reorderedCategories.map((category, index) => ({
+        id: category.id,
+        displayOrder: index,
+      }))
+
+      // Call batch API
+      await reorderCategories(items)
+    } catch (err) {
+      // Rollback on error
+      setCategories(previousCategories)
+      setError(err instanceof Error ? err.message : 'Failed to reorder categories')
+      throw err
+    }
+  }, [categories])
+
   return {
     categories,
     isLoading,
@@ -112,5 +138,6 @@ export function useAdminCategories() {
     createNewCategory,
     updateCategory: updateExistingCategory,
     removeCategory,
+    reorderCategories: reorderCategoriesList,
   }
 }

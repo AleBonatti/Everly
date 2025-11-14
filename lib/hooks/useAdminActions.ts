@@ -10,6 +10,7 @@ import {
   createAction,
   updateAction,
   deleteAction,
+  reorderActions,
   type AdminAction,
   type CreateActionInput,
   type UpdateActionInput,
@@ -104,6 +105,31 @@ export function useAdminActions() {
     }
   }, [actions])
 
+  // Reorder actions (batch update)
+  const reorderActionsList = useCallback(async (reorderedActions: AdminAction[]) => {
+    // Store previous state for rollback
+    const previousActions = actions
+
+    try {
+      // Optimistic update - immediately update the UI
+      setActions(reorderedActions)
+
+      // Prepare batch update payload
+      const items = reorderedActions.map((action, index) => ({
+        id: action.id,
+        displayOrder: index,
+      }))
+
+      // Call batch API
+      await reorderActions(items)
+    } catch (err) {
+      // Rollback on error
+      setActions(previousActions)
+      setError(err instanceof Error ? err.message : 'Failed to reorder actions')
+      throw err
+    }
+  }, [actions])
+
   return {
     actions,
     isLoading,
@@ -112,5 +138,6 @@ export function useAdminActions() {
     createNewAction,
     updateAction: updateExistingAction,
     removeAction,
+    reorderActions: reorderActionsList,
   }
 }

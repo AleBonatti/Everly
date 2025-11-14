@@ -3,18 +3,19 @@
 /**
  * Admin Users Management Page
  *
- * Displays a table of all users with CRUD operations.
+ * Displays a modern card-based list of all users with CRUD operations.
  * Only accessible to admin users.
  */
 
 import { useState } from 'react'
-import { Plus, Edit, Trash2, Shield, User as UserIcon } from 'lucide-react'
+import { Plus, User as UserIcon } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Loader from '@/components/ui/Loader'
 import EmptyState from '@/components/ui/EmptyState'
+import { UserListItem } from '@/components/admin/UserListItem'
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout'
 import { useAdminUsers } from '@/lib/hooks/useAdminUsers'
 import type { AdminUser, CreateUserInput } from '@/lib/services/admin-users'
@@ -164,7 +165,7 @@ export default function AdminUsersPage() {
           </Button>
         </div>
 
-        {/* Users table */}
+        {/* Users list */}
         {users.length === 0 ? (
           <EmptyState
             icon={UserIcon}
@@ -176,108 +177,18 @@ export default function AdminUsersPage() {
             }}
           />
         ) : (
-          <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
-                <thead className="bg-neutral-50 dark:bg-neutral-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      Created
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 bg-white dark:divide-neutral-800 dark:bg-neutral-900">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm">
-                          {user.fullName && (
-                            <div className="font-medium text-neutral-900 dark:text-neutral-100">
-                              {user.fullName}
-                            </div>
-                          )}
-                          <div className={user.fullName ? "text-neutral-500 dark:text-neutral-400" : "font-medium text-neutral-900 dark:text-neutral-100"}>
-                            {user.email || <span className="font-mono text-xs text-neutral-400 dark:text-neutral-500">{user.id}</span>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            user.role === USER_ROLES.ADMIN
-                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-                              : 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300'
-                          }`}
-                        >
-                          {user.role === USER_ROLES.ADMIN ? (
-                            <Shield className="h-3 w-3" />
-                          ) : (
-                            <UserIcon className="h-3 w-3" />
-                          )}
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={<Edit className="h-4 w-4" />}
-                            onClick={() => openEditModal(user)}
-                          >
-                            Edit
-                          </Button>
-
-                          {deleteConfirm === user.id ? (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleDelete(user.id)}
-                                loading={isDeleting}
-                                disabled={isDeleting}
-                              >
-                                Confirm
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteConfirm(null)}
-                                disabled={isDeleting}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              icon={<Trash2 className="h-4 w-4" />}
-                              onClick={() => setDeleteConfirm(user.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="space-y-3">
+            {users.map((user) => (
+              <UserListItem
+                key={user.id}
+                user={user}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+                isDeleting={isDeleting}
+                deleteConfirm={deleteConfirm}
+                onDeleteConfirm={setDeleteConfirm}
+              />
+            ))}
           </div>
         )}
 

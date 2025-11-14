@@ -150,3 +150,23 @@ export async function deleteCategory(categoryId: string): Promise<void> {
     throw new Error(error.error || 'Failed to delete category')
   }
 }
+
+/**
+ * Batch reorder categories (admin only)
+ */
+export async function reorderCategories(
+  items: Array<{ id: string; displayOrder: number }>
+): Promise<void> {
+  const response = await fetch('/api/admin/categories/reorder', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ items }),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to reorder categories' }))
+    throw new Error(error.error || 'Failed to reorder categories')
+  }
+}

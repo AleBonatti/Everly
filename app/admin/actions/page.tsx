@@ -3,17 +3,19 @@
 /**
  * Admin Actions Management Page
  *
- * Displays a table of all actions with CRUD operations.
+ * Displays a modern card-based list of all actions with CRUD operations and drag-and-drop sorting.
  * Only accessible to admin users.
  */
 
 import { useState } from 'react';
-import { Plus, Edit, Trash2, Zap } from 'lucide-react';
+import { Plus, Zap } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Loader from '@/components/ui/Loader';
 import EmptyState from '@/components/ui/EmptyState';
+import { SortableList } from '@/components/ui/SortableList';
+import { ActionListItem } from '@/components/admin/ActionListItem';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 import { useAdminActions } from '@/lib/hooks/useAdminActions';
 import type {
@@ -29,6 +31,7 @@ export default function AdminActionsPage() {
     createNewAction,
     updateAction,
     removeAction,
+    reorderActions,
   } = useAdminActions();
 
   // Modal state
@@ -113,6 +116,16 @@ export default function AdminActionsPage() {
     }
   };
 
+  // Handle reorder
+  const handleReorder = async (reorderedActions: AdminAction[]) => {
+    // Update display order for all actions in a single batch request
+    try {
+      await reorderActions(reorderedActions);
+    } catch (err) {
+      console.error('Failed to reorder actions:', err);
+    }
+  };
+
   if (isLoading) {
     return (
       <AuthenticatedLayout>
@@ -157,7 +170,7 @@ export default function AdminActionsPage() {
           </Button>
         </div>
 
-        {/* Actions table */}
+        {/* Actions list */}
         {actions.length === 0 ? (
           <EmptyState
             icon={Zap}
@@ -169,92 +182,22 @@ export default function AdminActionsPage() {
             }}
           />
         ) : (
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
-                <thead className="bg-neutral-50 dark:bg-neutral-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                      Display Order
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                      Created
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 bg-white dark:divide-neutral-800 dark:bg-neutral-900">
-                  {actions.map((action) => (
-                    <tr
-                      key={action.id}
-                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                          {action.name}
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
-                        {action.displayOrder}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
-                        {new Date(action.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={<Edit className="h-4 w-4" />}
-                            onClick={() => openEditModal(action)}
-                          >
-                            Edit
-                          </Button>
-
-                          {deleteConfirm === action.id ? (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleDelete(action.id)}
-                                loading={isDeleting}
-                                disabled={isDeleting}
-                              >
-                                Confirm
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteConfirm(null)}
-                                disabled={isDeleting}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              icon={<Trash2 className="h-4 w-4" />}
-                              onClick={() => setDeleteConfirm(action.id)}
-                              className="text-danger-600 hover:text-danger-700 hover:bg-danger-50 dark:text-danger-400 dark:hover:text-danger-300 dark:hover:bg-danger-950"
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <SortableList
+            items={actions}
+            onReorder={handleReorder}
+            getItemId={(action) => action.id}
+            renderItem={(action) => (
+              <ActionListItem
+                action={action}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+                isDeleting={isDeleting}
+                deleteConfirm={deleteConfirm}
+                onDeleteConfirm={setDeleteConfirm}
+              />
+            )}
+            className="space-y-3"
+          />
         )}
 
         {/* Add/Edit Modal */}
