@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { getIconComponent } from '@/lib/utils/icon-utils';
 import Badge from './Badge';
 import Button from './Button';
+import AISuggestions from '@/components/features/AISuggestions';
 
 export interface ItemDetailPanelProps {
   open: boolean;
@@ -253,6 +254,17 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
                       {item.note}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* AI Suggestions */}
+              {item.action && (
+                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                  <AISuggestions
+                    action={item.action}
+                    title={item.title}
+                    category={item.category}
+                  />
                 </div>
               )}
 
