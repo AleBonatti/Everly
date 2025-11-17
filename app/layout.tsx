@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { inter } from '@/lib/fonts'
+import { spaceGrotesk } from '@/lib/fonts'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
 import ToastProvider from '@/components/providers/ToastProvider'
 import './globals.css'
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

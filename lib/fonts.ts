@@ -1,11 +1,11 @@
-import { Inter } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 
 /**
- * Inter variable font configuration
+ * Space Grotesk variable font configuration
  * Loaded with font-display: swap for optimal performance
  */
-export const inter = Inter({
+export const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-space-grotesk',
   display: 'swap',
 })
