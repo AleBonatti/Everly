@@ -42,18 +42,27 @@ Please suggest 3 similar ${action} activities or content that the user might enj
 For each suggestion, provide:
 1. A clear, concise title
 2. A brief 1-2 sentence description explaining why it's similar or why the user might enjoy it
-3. A publicly accessible image URL that represents the content (from sources like TMDB, Wikipedia, official websites, or other reliable public sources)
+3. A short search term (2-3 words) that could be used to find a relevant image for this suggestion
 
-Format your response as a JSON array with objects containing "title", "description", and "imageUrl" fields.
+Format your response as a JSON array with objects containing "title", "description", and "imageSearchTerm" fields.
 Make sure the suggestions are diverse but related to the original item.
 Focus on quality recommendations that match the spirit and genre of the original item.
-For the imageUrl, provide a direct link to an actual image (not a placeholder). If you cannot find a real image URL, use an empty string.`;
+
+For imageSearchTerm: provide simple, descriptive terms that would find good images (e.g., "pulp fiction movie", "sushi restaurant", "tokyo skyline")
+
+Example format:
+[
+  {
+    "title": "Example Title",
+    "description": "Brief description of why this is similar.",
+    "imageSearchTerm": "example search term"
+  }
+]`;
 
     // Generate AI response using Vercel AI SDK
     const { text } = await generateText({
       model: openai('gpt-4o-mini'),
       prompt,
-      temperature: 0.7,
     });
 
     // Parse the AI response
@@ -80,14 +89,56 @@ For the imageUrl, provide a direct link to an actual image (not a placeholder). 
       z.object({
         title: z.string(),
         description: z.string(),
-        imageUrl: z.string().optional(),
+        imageSearchTerm: z.string().optional(),
       })
     );
 
     const validatedSuggestions = suggestionsSchema.parse(suggestions);
 
+    // Fetch images from Unsplash for each suggestion
+    const suggestionsWithImages = await Promise.all(
+      validatedSuggestions.slice(0, 5).map(async (suggestion) => {
+        let imageUrl: string | undefined;
+
+        if (suggestion.imageSearchTerm) {
+          try {
+            // Use Unsplash API to get an image
+            const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY;
+            if (unsplashAccessKey) {
+              const unsplashResponse = await fetch(
+                `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+                  suggestion.imageSearchTerm
+                )}&per_page=1&orientation=landscape`,
+                {
+                  headers: {
+                    Authorization: `Client-ID ${unsplashAccessKey}`,
+                  },
+                }
+              );
+
+              if (unsplashResponse.ok) {
+                const data = await unsplashResponse.json();
+                if (data.results && data.results.length > 0) {
+                  imageUrl = data.results[0].urls.regular;
+                }
+              }
+            }
+          } catch (imageError) {
+            console.error('Failed to fetch image:', imageError);
+            // Continue without image if fetch fails
+          }
+        }
+
+        return {
+          title: suggestion.title,
+          description: suggestion.description,
+          imageUrl,
+        };
+      })
+    );
+
     return NextResponse.json({
-      suggestions: validatedSuggestions.slice(0, 5), // Ensure max 5 suggestions
+      suggestions: suggestionsWithImages,
     });
   } catch (error) {
     console.error('AI suggestions error:', error);

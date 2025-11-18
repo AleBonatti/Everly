@@ -27,6 +27,15 @@ const CATEGORY_TYPES = {
   CUSTOM: 'custom',
 } as const
 
+const CONTENT_TYPES = [
+  { value: 'generic', label: 'Generic' },
+  { value: 'cinema', label: 'Cinema/Movies' },
+  { value: 'music', label: 'Music' },
+  { value: 'place', label: 'Places/Travel' },
+  { value: 'book', label: 'Books/Literature' },
+  { value: 'food', label: 'Food/Restaurants' },
+]
+
 type CategoryType = typeof CATEGORY_TYPES[keyof typeof CATEGORY_TYPES]
 
 export default function AdminCategoriesPage() {
@@ -41,6 +50,7 @@ export default function AdminCategoriesPage() {
   const [formName, setFormName] = useState('')
   const [formIcon, setFormIcon] = useState<string>('')
   const [formType, setFormType] = useState<CategoryType>(CATEGORY_TYPES.CUSTOM)
+  const [formContentType, setFormContentType] = useState('generic')
   const [formDisplayOrder, setFormDisplayOrder] = useState('0')
 
   // Delete confirmation
@@ -52,6 +62,7 @@ export default function AdminCategoriesPage() {
     setFormName('')
     setFormIcon('')
     setFormType(CATEGORY_TYPES.CUSTOM)
+    setFormContentType('generic')
     setFormDisplayOrder('0')
     setEditingCategory(null)
   }
@@ -68,6 +79,7 @@ export default function AdminCategoriesPage() {
     setFormName(category.name)
     setFormIcon(category.icon || '')
     setFormType(category.type as CategoryType)
+    setFormContentType(category.contentType || 'generic')
     setFormDisplayOrder(category.displayOrder.toString())
     setIsModalOpen(true)
   }
@@ -91,6 +103,7 @@ export default function AdminCategoriesPage() {
           name: formName.trim(),
           icon: formIcon || null,
           type: formType,
+          contentType: formContentType,
           displayOrder: parseInt(formDisplayOrder) || 0,
         })
       } else {
@@ -99,6 +112,7 @@ export default function AdminCategoriesPage() {
           name: formName.trim(),
           icon: formIcon || null,
           type: formType,
+          contentType: formContentType,
           displayOrder: parseInt(formDisplayOrder) || 0,
         }
         await createNewCategory(input)
@@ -240,6 +254,16 @@ export default function AdminCategoriesPage() {
               ]}
               required
               fullWidth
+            />
+
+            <Select
+              label="Content Type"
+              value={formContentType}
+              onChange={(e) => setFormContentType(e.target.value)}
+              options={CONTENT_TYPES}
+              required
+              fullWidth
+              helperText="Determines which AI image search tool to use for suggestions"
             />
 
             <Input

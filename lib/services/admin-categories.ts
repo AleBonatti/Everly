@@ -11,6 +11,7 @@ export interface AdminCategory {
   name: string
   icon?: string | null
   type: 'default' | 'custom'
+  contentType?: string
   displayOrder: number
   createdAt: string
   updatedAt: string
@@ -20,6 +21,7 @@ export interface CreateCategoryInput {
   name: string
   icon?: string | null
   type: 'default' | 'custom'
+  contentType?: string
   displayOrder?: number
 }
 
@@ -27,6 +29,7 @@ export interface UpdateCategoryInput {
   name?: string
   icon?: string | null
   type?: 'default' | 'custom'
+  contentType?: string
   displayOrder?: number
 }
 
@@ -39,6 +42,7 @@ function transformApiCategory(apiCategory: any): AdminCategory {
     name: apiCategory.name,
     icon: apiCategory.icon || null,
     type: apiCategory.type,
+    contentType: apiCategory.contentType || apiCategory.content_type || 'generic',
     displayOrder: apiCategory.displayOrder || apiCategory.display_order || 0,
     createdAt: apiCategory.createdAt || apiCategory.created_at,
     updatedAt: apiCategory.updatedAt || apiCategory.updated_at,

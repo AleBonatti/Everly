@@ -25,6 +25,7 @@ export interface Database {
           user_id: string;
           name: string;
           type: 'default' | 'custom';
+          content_type: string;
           display_order: number;
           created_at: string;
           updated_at: string;
@@ -34,6 +35,7 @@ export interface Database {
           user_id: string;
           name: string;
           type?: 'default' | 'custom';
+          content_type?: string;
           display_order: number;
           created_at?: string;
           updated_at?: string;
@@ -43,6 +45,7 @@ export interface Database {
           user_id?: string;
           name?: string;
           type?: 'default' | 'custom';
+          content_type?: string;
           display_order: number;
           created_at?: string;
           updated_at?: string;

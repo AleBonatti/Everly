@@ -20,6 +20,7 @@ export const categories = pgTable('categories', {
   name: text('name').notNull().unique(),
   icon: text('icon'),
   type: categoryTypeEnum('type').notNull().default('default'),
+  contentType: text('content_type').notNull().default('generic'),
   displayOrder: integer('display_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
