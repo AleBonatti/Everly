@@ -30,6 +30,7 @@ export interface ItemDetailPanelProps {
     title: string;
     action?: string | null;
     category: string;
+    categoryId?: string;
     categoryIcon?: string | null;
     done: boolean;
     description?: string | null;
@@ -264,6 +265,7 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
                     action={item.action}
                     title={item.title}
                     category={item.category}
+                    categoryId={item.categoryId}
                   />
                 </div>
               )}

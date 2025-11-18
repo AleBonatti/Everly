@@ -9,6 +9,8 @@ import Button from '@/components/ui/Button';
 export interface Suggestion {
   title: string;
   description: string;
+  year?: string;
+  creator?: string;
   imageUrl?: string;
 }
 
@@ -16,6 +18,7 @@ export interface AISuggestionsProps {
   action: string;
   title: string;
   category?: string;
+  categoryId?: string;
   onClose?: () => void;
 }
 
@@ -23,6 +26,7 @@ export default function AISuggestions({
   action,
   title,
   category,
+  categoryId,
   onClose,
 }: AISuggestionsProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -45,6 +49,7 @@ export default function AISuggestions({
           action,
           title,
           category,
+          categoryId,
         }),
       });
 
@@ -168,6 +173,13 @@ export default function AISuggestions({
                       <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
                         {suggestion.title}
                       </h4>
+                      {(suggestion.year || suggestion.creator) && (
+                        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-500">
+                          {[suggestion.creator, suggestion.year]
+                            .filter(Boolean)
+                            .join(' • ')}
+                        </p>
+                      )}
                       <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
                         {suggestion.description}
                       </p>

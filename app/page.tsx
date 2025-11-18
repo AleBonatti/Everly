@@ -484,6 +484,7 @@ export default function HomePage() {
                 title: itemActions.detailPanelItem.title,
                 action: getActionLabel(itemActions.detailPanelItem.actionId, dbActions),
                 category: getCategoryLabel(itemActions.detailPanelItem.categoryId, dbCategories),
+                categoryId: itemActions.detailPanelItem.categoryId,
                 categoryIcon: getCategoryIcon(itemActions.detailPanelItem.categoryId, dbCategories),
                 done: itemActions.detailPanelItem.status === 'done',
                 description: itemActions.detailPanelItem.description,

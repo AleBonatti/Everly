@@ -5,6 +5,7 @@ A minimalist and delightful app to keep track of future activities—movies to w
 ## Features
 
 - **Quick Capture**: Add items with title and category in under 10 seconds
+- **AI-Powered Suggestions**: Get personalized content recommendations with images (movies, books, music, etc.)
 - **Secure & Private**: Email/password authentication with row-level security
 - **Smart Organization**: Default categories (Movies, Restaurants, Trips, Books) plus custom categories
 - **Search & Filter**: Find items quickly with case-insensitive partial matching
@@ -19,6 +20,8 @@ A minimalist and delightful app to keep track of future activities—movies to w
 - **Styling**: Tailwind CSS 4
 - **Database**: Supabase (PostgreSQL with RLS)
 - **Authentication**: Supabase Auth
+- **AI Integration**: OpenAI GPT-4o-mini (via Vercel AI SDK)
+- **Image APIs**: TMDB (movies), Unsplash (fallback)
 - **Icons**: Lucide React
 - **Animations**: Framer Motion
 - **Package Manager**: pnpm
@@ -48,29 +51,54 @@ A minimalist and delightful app to keep track of future activities—movies to w
    - Create a Supabase project at https://supabase.com
    - Copy your project URL and anon key
    - Apply the database schema from `specs/001-future-list-app/contracts/supabase.sql`
+   - Run migrations in order:
+     ```bash
+     # Apply migrations from the migrations/ directory
+     migrations/004_add_category_content_type.sql
+     ```
 
 4. **Configure environment variables**
    ```bash
    cp .env.example .env.local
    ```
 
-   Edit `.env.local` with your Supabase credentials:
+   Edit `.env.local` with your credentials:
    ```env
+   # Supabase
    NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+   # AI Features (optional but recommended)
+   OPENAI_API_KEY=your-openai-api-key-here
+   TMDB_API_KEY=your-tmdb-api-key-here
    ```
+
+   **API Key Setup:**
+   - OpenAI: Get your API key from https://platform.openai.com/api-keys
+   - TMDB: Get your API key from https://www.themoviedb.org/settings/api
 
 5. **Generate TypeScript types from Supabase**
    ```bash
    pnpm supabase gen types typescript --project-id <your-project-id> > lib/supabase/types.ts
    ```
 
-6. **Start development server**
+6. **Set up AI content types (optional)**
+   - Login as admin user
+   - Navigate to Admin > Categories
+   - For each category, set the appropriate content type:
+     - Cinema/Movies → `cinema`
+     - Music/Albums → `music`
+     - Books → `book`
+     - Restaurants → `food`
+     - Travel/Places → `place`
+     - Default → `generic`
+
+7. **Start development server**
    ```bash
    pnpm dev
    ```
 
-7. **Open in browser**
+8. **Open in browser**
    Navigate to http://localhost:3000
 
 ### Development Workflow
