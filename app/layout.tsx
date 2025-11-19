@@ -1,11 +1,11 @@
-import type { Metadata } from 'next'
-import { spaceGrotesk } from '@/lib/fonts'
-import { ThemeProvider } from '@/lib/contexts/ThemeContext'
-import ToastProvider from '@/components/providers/ToastProvider'
-import './globals.css'
+import type { Metadata } from 'next';
+import { spaceGrotesk } from '@/lib/fonts';
+import { ThemeProvider } from '@/lib/contexts/ThemeContext';
+import ToastProvider from '@/components/providers/ToastProvider';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FutureList - Your Personal Wishlist',
+  title: 'Everly - A list of things worth doing',
   description:
     'A minimalist app to track future activities—movies to watch, restaurants to try, places to visit, books to read.',
   keywords: [
@@ -18,12 +18,12 @@ export const metadata: Metadata = {
     'trips',
     'books',
   ],
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
@@ -49,5 +49,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

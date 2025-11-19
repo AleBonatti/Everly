@@ -2,7 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ListTodo, LogOut, Users, Key, FolderTree, Home, Zap, Moon, Sun } from 'lucide-react';
+import {
+  ListTodo,
+  LogOut,
+  Users,
+  Key,
+  FolderTree,
+  Home,
+  Zap,
+  Moon,
+  Sun,
+} from 'lucide-react';
 import Container from './Container';
 import Button from '../ui/Button';
 import Tooltip from '../ui/Tooltip';
@@ -22,7 +32,7 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/95 backdrop-blur shadow-sm supports-backdrop-filter:bg-white/60 dark:border-neutral-800 dark:bg-neutral-900/95 dark:supports-backdrop-filter:bg-neutral-900/60">
-      <Container>
+      <Container size="2xl">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link
@@ -42,7 +52,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      pathname === '/' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                      pathname === '/' &&
+                        'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
                     )}
                   >
                     <Home className="h-4 w-4" />
@@ -58,7 +69,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          pathname === '/admin/categories' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                          pathname === '/admin/categories' &&
+                            'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
                         )}
                       >
                         <FolderTree className="h-4 w-4" />
@@ -72,7 +84,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          pathname === '/admin/actions' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                          pathname === '/admin/actions' &&
+                            'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
                         )}
                       >
                         <Zap className="h-4 w-4" />
@@ -86,7 +99,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          pathname === '/admin/users' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                          pathname === '/admin/users' &&
+                            'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
                         )}
                       >
                         <Users className="h-4 w-4" />
@@ -102,7 +116,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      pathname === '/account' && 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
+                      pathname === '/account' &&
+                        'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-400'
                     )}
                   >
                     <Key className="h-4 w-4" />

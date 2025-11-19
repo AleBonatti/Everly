@@ -12,6 +12,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { UserProvider } from '@/lib/contexts/UserContext'
 import Header from './Header'
+import Footer from './Footer'
+import Container from './Container'
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode
@@ -39,7 +41,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
   return (
     <UserProvider>
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-950">
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
@@ -48,7 +50,12 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
           Skip to main content
         </a>
         <Header isAuthenticated={true} onLogout={handleLogout} />
-        <main id="main-content">{children}</main>
+        <main id="main-content" className="flex-1">
+          <Container size="2xl" className="py-8">
+            {children}
+          </Container>
+        </main>
+        <Footer />
       </div>
     </UserProvider>
   )

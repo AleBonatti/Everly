@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
 }
 
 const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
@@ -12,6 +12,7 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
       md: 'max-w-4xl',
       lg: 'max-w-6xl',
       xl: 'max-w-7xl',
+      '2xl': 'max-w-[1440px]',
       full: 'max-w-full',
     };
 
