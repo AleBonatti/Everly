@@ -69,7 +69,7 @@ export function CategoryListItem({
         </button>
 
         {/* Icon */}
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/20">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/20">
           {CategoryIcon ? (
             <CategoryIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           ) : (
@@ -90,7 +90,7 @@ export function CategoryListItem({
                   : 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300'
               }`}
             >
-              {category.type}
+              {category.contentType}
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />

@@ -8,11 +8,13 @@ import { imageToolRegistry } from '@/lib/ai/image-tools';
 import { MovieImageTool } from '@/lib/ai/tools/movie-tool';
 import { GameImageTool } from '@/lib/ai/tools/game-tool';
 import { MusicImageTool } from '@/lib/ai/tools/music-tool';
+import { BookImageTool } from '@/lib/ai/tools/book-tool';
 
 // Register tools
 imageToolRegistry.register('cinema', new MovieImageTool());
 imageToolRegistry.register('game', new GameImageTool());
 imageToolRegistry.register('music', new MusicImageTool());
+imageToolRegistry.register('book', new BookImageTool());
 
 /**
  * AI Suggestions API Route
