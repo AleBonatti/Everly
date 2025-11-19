@@ -6,7 +6,6 @@ import { Inbox, AlertCircle } from 'lucide-react';
 import { useItems } from '@/lib/hooks/useItems';
 import { useCategories } from '@/lib/hooks/useCategories';
 import { useActions } from '@/lib/hooks/useActions';
-import { useItemStats } from '@/lib/hooks/useItemStats';
 import { useItemActions } from '@/lib/hooks/useItemActions';
 import { useItemFilters } from '@/lib/hooks/useItemFilters';
 import { useKeyboardShortcut } from '@/lib/hooks/useKeyboardShortcut';
@@ -28,7 +27,6 @@ import ListItem from '@/components/ui/ListItem';
 import ItemDetailPanel from '@/components/ui/ItemDetailPanel';
 import ListItemSkeleton from '@/components/ui/ListItemSkeleton';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
-import ItemStats from '@/components/features/ItemStats';
 import ItemFilters from '@/components/features/ItemFilters';
 import BulkActionsToolbar from '@/components/features/BulkActionsToolbar';
 import QuickAddWidget from '@/components/features/QuickAddWidget';
@@ -91,9 +89,6 @@ export default function HomePage() {
     setSelectedPriorities,
     filteredItems,
   } = useItemFilters(allItems);
-
-  // Calculate stats
-  const stats = useItemStats(allItems);
 
   // Toast notifications
   const toast = useToast();
@@ -188,7 +183,7 @@ export default function HomePage() {
   return (
     <AuthenticatedLayout>
       {/* Main content */}
-      <div className="py-8">
+      <div>
         {/* Error message */}
         {error && (
           <motion.div
@@ -236,12 +231,6 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Stats section */}
-              <ItemStats stats={stats} />
-
-              {/* Divider */}
-              <div className="divider" />
-
               {/* Filters and Actions section */}
               <ItemFilters
                 categories={categories}
@@ -289,7 +278,7 @@ export default function HomePage() {
                 />
               ) : (
                 <motion.div
-                  className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                  className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4"
                   layout
                 >
                   <AnimatePresence mode="popLayout">

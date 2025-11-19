@@ -32,19 +32,24 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full">
       <Container size="2xl" className="mt-4">
-        <div className="rounded-2xl border border-neutral-200 bg-[#F2F2F2] shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-2xl bg-[#F2F2F2] dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
             {/* Logo */}
             <Link
               href={isAuthenticated ? '/' : '/'}
-              className="flex items-center gap-2 font-bold text-neutral-900 hover:text-primary-600 transition-colors dark:text-neutral-100 dark:hover:text-primary-400"
+              className="flex items-center gap-4 text-neutral-900 dark:text-neutral-100"
             >
-              <img
+              <Image
                 src="/logo.svg"
-                className="h-6 w-6"
+                width={30}
+                height={30}
+                unoptimized
                 alt="Everly"
               />
-              <span className="text-lg">Everly</span>
+              <span className="text-xl font-normal">Everly</span>
+              <span className="text-base">
+                ... a list of things worth doing
+              </span>
             </Link>
 
             {/* Navigation */}

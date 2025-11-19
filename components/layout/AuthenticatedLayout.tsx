@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /**
  * Authenticated Layout Wrapper
@@ -7,41 +7,43 @@
  * Handles logout functionality centrally.
  */
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { UserProvider } from '@/lib/contexts/UserContext'
-import Header from './Header'
-import Footer from './Footer'
-import Container from './Container'
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { UserProvider } from '@/lib/contexts/UserContext';
+import Header from './Header';
+import Footer from './Footer';
+import Container from './Container';
 
 interface AuthenticatedLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-export default function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
-  const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+export default function AuthenticatedLayout({
+  children,
+}: AuthenticatedLayoutProps) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    if (isLoggingOut) return
+    if (isLoggingOut) return;
 
-    setIsLoggingOut(true)
+    setIsLoggingOut(true);
     try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/auth/login')
-      router.refresh()
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/auth/login');
+      router.refresh();
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Logout error:', error);
     } finally {
-      setIsLoggingOut(false)
+      setIsLoggingOut(false);
     }
-  }
+  };
 
   return (
     <UserProvider>
-      <div className="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-950">
+      <div className="flex min-h-screen flex-col dark:bg-neutral-950">
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
@@ -52,7 +54,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         <Header isAuthenticated={true} onLogout={handleLogout} />
         <main id="main-content" className="flex-1">
           <Container size="2xl" className="py-4">
-            <div className="rounded-2xl border border-neutral-200 bg-[#F2F2F2] p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-2xl bg-[#F2F2F2] p-6 dark:border-neutral-800 dark:bg-neutral-900">
               {children}
             </div>
           </Container>
@@ -60,5 +62,5 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         <Footer />
       </div>
     </UserProvider>
-  )
+  );
 }

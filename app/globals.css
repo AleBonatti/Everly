@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -168,12 +168,17 @@
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50;
+    @apply text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   /* Enhanced Typography */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 
@@ -259,14 +264,22 @@
 
   /* Gradient Text */
   .text-gradient-primary {
-    background-image: linear-gradient(135deg, rgb(var(--primary)), rgb(var(--primary-light)));
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--primary)),
+      rgb(var(--primary-light))
+    );
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
   }
 
   .text-gradient-accent {
-    background-image: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-light)));
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-light))
+    );
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -283,7 +296,11 @@
 
   /* Button Gradients */
   .btn-gradient-primary {
-    background-image: linear-gradient(135deg, rgb(var(--primary)), rgb(var(--primary-light)));
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--primary)),
+      rgb(var(--primary-light))
+    );
     @apply text-white shadow-md transition-shadow;
   }
 
@@ -292,7 +309,11 @@
   }
 
   .btn-gradient-accent {
-    background-image: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-light)));
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-light))
+    );
     @apply text-white shadow-md transition-shadow;
   }
 
@@ -370,18 +391,27 @@
 
   /* Grid Patterns */
   .grid-dots {
-    background-image: radial-gradient(circle, rgb(var(--neutral-300)) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      rgb(var(--neutral-300)) 1px,
+      transparent 1px
+    );
     background-size: 20px 20px;
   }
 
   /* Animations */
   @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
@@ -390,8 +420,12 @@
   }
 
   @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
   }
 
   .animate-float {
