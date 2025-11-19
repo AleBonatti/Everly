@@ -81,6 +81,8 @@ export async function POST(request: NextRequest) {
       location,
       note,
       targetDate,
+      imageUrl,
+      metadata,
     } = body
 
     // Validate required fields
@@ -107,6 +109,8 @@ export async function POST(request: NextRequest) {
         location: location?.trim() || null,
         note: note?.trim() || null,
         targetDate: targetDate || null,
+        imageUrl: imageUrl?.trim() || null,
+        metadata: metadata || null,
       })
       .returning()
 

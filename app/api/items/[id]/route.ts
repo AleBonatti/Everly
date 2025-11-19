@@ -85,6 +85,8 @@ export async function PATCH(
       location,
       note,
       targetDate,
+      imageUrl,
+      metadata,
     } = body
 
     // Build update object with only provided fields
@@ -116,6 +118,12 @@ export async function PATCH(
     }
     if (targetDate !== undefined) {
       updateData.targetDate = targetDate
+    }
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl?.trim() || null
+    }
+    if (metadata !== undefined) {
+      updateData.metadata = metadata || null
     }
 
     // Always update updatedAt
