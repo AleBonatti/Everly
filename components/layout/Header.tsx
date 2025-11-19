@@ -39,11 +39,8 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
               href={isAuthenticated ? '/' : '/'}
               className="flex items-center gap-2 font-bold text-neutral-900 hover:text-primary-600 transition-colors dark:text-neutral-100 dark:hover:text-primary-400"
             >
-              <Image
+              <img
                 src="/logo.svg"
-                width={24}
-                height={24}
-                unoptimized
                 className="h-6 w-6"
                 alt="Everly"
               />
