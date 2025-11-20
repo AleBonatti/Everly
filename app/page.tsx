@@ -306,6 +306,7 @@ export default function HomePage() {
                           done={item.status === 'done'}
                           description={item.description || undefined}
                           priority={item.priority}
+                          imageUrl={item.imageUrl}
                           onClick={itemActions.handleItemClick}
                           onToggleDone={itemActions.handleToggleDone}
                           selectionMode={bulkSelection.isSelectionMode}
