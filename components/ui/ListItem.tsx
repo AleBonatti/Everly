@@ -95,7 +95,7 @@ const ListItem: React.FC<ListItemProps> = ({
         )}
         {/* Priority badge in top right corner (white) - Above image */}
         {priority && priorityStyle && (
-          <div className="absolute top-3 right-3 z-10">
+          <div className="absolute top-4 right-3 z-10">
             <div className="flex items-center gap-1.5 rounded-full bg-white px-2 py-1 text-xs text-primary font-normal dark:bg-neutral-100">
               <Circle
                 className="h-3 w-3"
@@ -133,9 +133,9 @@ const ListItem: React.FC<ListItemProps> = ({
       </div>
 
       {/* Content Section - Below image */}
-      <div className="flex flex-col px-6 py-3" style={{ minHeight: '160px' }}>
+      <div className="flex flex-col p-3" style={{ minHeight: '160px' }}>
         {/* Title with optional action */}
-        <div className="grow">
+        <div className="grow px-3">
           {action && (
             <span className="text-sm font-normal text-accent dark:text-accent-400">
               {action}

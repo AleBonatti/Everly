@@ -36,8 +36,8 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
 
   const priorityVariants = {
     high: 'danger' as const,
-    medium: 'accent' as const,
-    low: 'secondary' as const,
+    medium: 'warning' as const,
+    low: 'success' as const,
   };
 
   const handlePriorityToggle = (priority: string) => {
@@ -57,6 +57,7 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
             {(['high', 'medium', 'low'] as const).map((priority) => (
               <Badge
                 key={priority}
+                size="sm"
                 text={priority.charAt(0).toUpperCase() + priority.slice(1)}
                 variant={priorityVariants[priority]}
                 icon={priorityIcons[priority]}

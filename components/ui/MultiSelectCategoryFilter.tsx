@@ -94,7 +94,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-[250px]">
       {label && (
         <label
           className={cn(
