@@ -13,9 +13,20 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ className, text, variant = 'primary', size = 'md', icon: Icon, selected = false, ...props }, ref) => {
+  (
+    {
+      className,
+      text,
+      variant = 'primary',
+      size = 'md',
+      icon: Icon,
+      selected = false,
+      ...props
+    },
+    ref
+  ) => {
     const baseClasses = 'text-white';
-    const selectedClasses = 'ring-2 ring-offset-2';
+    const selectedClasses = 'ring-1 ring-accent';
 
     const sizes = {
       sm: {
@@ -33,13 +44,13 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     };
 
     const getBackgroundColor = () => {
-      if (variant === 'primary') return 'rgb(var(--primary))'
-      if (variant === 'secondary') return 'rgb(var(--secondary))'
-      if (variant === 'accent') return 'rgb(var(--accent))'
-      if (variant === 'success') return 'rgb(var(--success))'
-      if (variant === 'danger') return 'rgb(var(--danger))'
-      return 'rgb(var(--primary))'
-    }
+      if (variant === 'primary') return 'rgb(var(--primary))';
+      if (variant === 'secondary') return 'rgb(var(--secondary))';
+      if (variant === 'accent') return 'rgb(var(--accent))';
+      if (variant === 'success') return 'rgb(var(--success))';
+      if (variant === 'danger') return 'rgb(var(--danger))';
+      return 'rgb(var(--primary))';
+    };
 
     return (
       <span

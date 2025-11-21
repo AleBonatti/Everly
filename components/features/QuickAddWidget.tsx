@@ -12,7 +12,10 @@ interface QuickAddWidgetProps {
   categories: Array<{ value: string; label: string }>;
 }
 
-export default function QuickAddWidget({ onAdd, categories }: QuickAddWidgetProps) {
+export default function QuickAddWidget({
+  onAdd,
+  categories,
+}: QuickAddWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -104,7 +107,7 @@ export default function QuickAddWidget({ onAdd, categories }: QuickAddWidgetProp
                   onClick={handleCancel}
                   disabled={isSubmitting}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                   Cancel
                 </Button>
                 <Button
@@ -114,7 +117,7 @@ export default function QuickAddWidget({ onAdd, categories }: QuickAddWidgetProp
                   disabled={!title.trim() || !categoryId || isSubmitting}
                   loading={isSubmitting}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                   Add
                 </Button>
               </div>

@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { cn } from '@/lib/utils'
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface CategoryPickerProps {
-  categories: Array<{ value: string; label: string; color?: string }>
-  value?: string
-  onChange: (value: string) => void
-  label?: string
-  error?: string
-  required?: boolean
-  disabled?: boolean
-  showAll?: boolean
-  allLabel?: string
+  categories: Array<{ value: string; label: string; color?: string }>;
+  value?: string;
+  onChange: (value: string) => void;
+  label?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  showAll?: boolean;
+  allLabel?: string;
 }
 
 const CategoryPicker: React.FC<CategoryPickerProps> = ({
@@ -26,12 +26,12 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
   showAll = false,
   allLabel = 'All',
 }) => {
-  const pickerId = `category-picker-${Math.random().toString(36).substring(2, 11)}`
-  const hasError = !!error
+  const pickerId = `category-picker-${Math.random().toString(36).substring(2, 11)}`;
+  const hasError = !!error;
 
   const allCategories = showAll
     ? [{ value: '', label: allLabel }, ...categories]
-    : categories
+    : categories;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -59,7 +59,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
         className="flex flex-wrap gap-2"
       >
         {allCategories.map((category) => {
-          const isSelected = value === category.value
+          const isSelected = value === category.value;
           return (
             <button
               key={category.value}
@@ -81,7 +81,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
             >
               {category.label}
             </button>
-          )
+          );
         })}
       </div>
       {error && (
@@ -94,9 +94,9 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
         </p>
       )}
     </div>
-  )
-}
+  );
+};
 
-CategoryPicker.displayName = 'CategoryPicker'
+CategoryPicker.displayName = 'CategoryPicker';
 
-export default CategoryPicker
+export default CategoryPicker;

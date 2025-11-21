@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, Circle, AlertCircle, ArrowUp, Package } from 'lucide-react';
+import { Check, Circle, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getIconComponent } from '@/lib/utils/icon-utils';
 import Badge from './Badge';
@@ -35,30 +35,26 @@ const ListItem: React.FC<ListItemProps> = ({
   onToggleDone,
   className,
 }) => {
-  // Priority configuration
+  // Priority configuration with filled circle icons
   const priorityConfig = {
     high: {
-      icon: AlertCircle,
-      badge: 'badge-danger',
       label: 'High',
-      borderColor: 'text-red-500',
+      color: '#ef4444', // red
+      variant: 'danger' as const,
     },
     medium: {
-      icon: ArrowUp,
-      badge: 'badge-accent',
       label: 'Medium',
-      borderColor: 'border-l-4 border-l-accent-500 dark:border-l-accent-400',
+      color: '#eab308', // yellow
+      variant: 'accent' as const,
     },
     low: {
-      icon: Circle,
-      badge: 'bg-success-100 text-success-600',
       label: 'Low',
-      borderColor: 'text-green-500 dark:border-l-success-600',
+      color: '#22c55e', // green
+      variant: 'secondary' as const,
     },
   };
 
   const priorityStyle = priority ? priorityConfig[priority] : null;
-  const PriorityIcon = priorityStyle?.icon;
 
   return (
     <div
@@ -77,7 +73,6 @@ const ListItem: React.FC<ListItemProps> = ({
         }
       }}
     >
-
       {/* Image Section - Upper half with max 200px height */}
       <div
         className="relative w-full overflow-hidden rounded-t-xl"
@@ -98,19 +93,14 @@ const ListItem: React.FC<ListItemProps> = ({
         {/* Priority badge in top right corner (white) - Above image */}
         {priority && priorityStyle && (
           <div className="absolute top-3 right-3 z-10">
-            <Badge
-              text={priorityStyle.label}
-              variant={
-                priority === 'high'
-                  ? 'danger'
-                  : priority === 'medium'
-                    ? 'accent'
-                    : 'secondary'
-              }
-              icon={PriorityIcon}
-              className="bg-white text-neutral-900 shadow-sm dark:bg-neutral-100"
-              style={{ backgroundColor: 'white', color: 'rgb(var(--primary))' }}
-            />
+            <div className="flex items-center gap-1.5 rounded-full bg-white px-2 py-1 text-xs text-primary font-normal dark:bg-neutral-100">
+              <Circle
+                className="h-3 w-3"
+                fill={priorityStyle.color}
+                stroke={priorityStyle.color}
+              />
+              <span>{priorityStyle.label}</span>
+            </div>
           </div>
         )}
         {/* Done toggle button in top left - Above image */}
@@ -140,12 +130,9 @@ const ListItem: React.FC<ListItemProps> = ({
       </div>
 
       {/* Content Section - Below image */}
-      <div
-        className="flex flex-col px-6 py-3"
-        style={{ minHeight: '160px' }}
-      >
+      <div className="flex flex-col px-6 py-3" style={{ minHeight: '160px' }}>
         {/* Title with optional action */}
-        <div className="flex-grow">
+        <div className="grow">
           {action && (
             <span className="text-sm font-normal text-accent dark:text-accent-400">
               {action}

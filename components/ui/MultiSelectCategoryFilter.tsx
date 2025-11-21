@@ -152,7 +152,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={cn(
-            'flex w-full items-center justify-between gap-2 rounded-full bg-white px-4 py-2.5 text-left text-sm transition-colors dark:bg-neutral-900 dark:border-neutral-700',
+            'flex w-full items-center justify-between gap-2 rounded-full bg-white px-4 py-1.5 text-left text-sm transition-colors dark:bg-neutral-900 dark:border-neutral-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-primary-500',
             'hover:border-neutral-400 dark:hover:border-neutral-600',
             disabled && 'cursor-not-allowed opacity-50',

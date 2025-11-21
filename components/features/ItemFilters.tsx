@@ -53,13 +53,27 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
       {/* Top row: Category filter, Toggle, and Add button */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center flex-1">
-          <div className="flex-1 sm:max-w-md">
-            <MultiSelectCategoryFilter
-              categories={categories}
-              selectedCategories={selectedCategories}
-              label=""
-              onChange={onCategoryChange}
-            />
+          <div className="space-x-1">
+            {(['high', 'medium', 'low'] as const).map((priority) => (
+              <Badge
+                key={priority}
+                text={priority.charAt(0).toUpperCase() + priority.slice(1)}
+                variant={priorityVariants[priority]}
+                icon={priorityIcons[priority]}
+                selected={selectedPriorities.includes(priority)}
+                onClick={() => handlePriorityToggle(priority)}
+                className="cursor-pointer hover:opacity-80"
+              />
+            ))}
+            {selectedPriorities.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onPriorityChange([])}
+                className="text-xs text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-500"
+              >
+                Clear
+              </button>
+            )}
           </div>
           <Toggle
             label="Hide done items"
@@ -68,41 +82,18 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
           />
         </div>
         <div className="flex gap-2">
+          <MultiSelectCategoryFilter
+            categories={categories}
+            selectedCategories={selectedCategories}
+            label=""
+            onChange={onCategoryChange}
+          />
           <Button
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={onAddClick}
-          >
-            Add Item
-          </Button>
+          ></Button>
         </div>
-      </div>
-
-      {/* Bottom row: Priority filter */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Priority:
-        </span>
-        {(['high', 'medium', 'low'] as const).map((priority) => (
-          <Badge
-            key={priority}
-            text={priority.charAt(0).toUpperCase() + priority.slice(1)}
-            variant={priorityVariants[priority]}
-            icon={priorityIcons[priority]}
-            selected={selectedPriorities.includes(priority)}
-            onClick={() => handlePriorityToggle(priority)}
-            className="cursor-pointer hover:opacity-80"
-          />
-        ))}
-        {selectedPriorities.length > 0 && (
-          <button
-            type="button"
-            onClick={() => onPriorityChange([])}
-            className="text-xs text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-500"
-          >
-            Clear
-          </button>
-        )}
       </div>
     </div>
   );

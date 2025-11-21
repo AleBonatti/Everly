@@ -181,10 +181,7 @@ export default function HomePage() {
               />
 
               {/* Quick Add Widget */}
-              <QuickAddWidget
-                onAdd={handleQuickAdd}
-                categories={categories}
-              />
+              <QuickAddWidget onAdd={handleQuickAdd} categories={categories} />
 
               {/* Items list or empty state */}
               {filteredItems.length === 0 ? (
