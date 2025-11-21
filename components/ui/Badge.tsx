@@ -6,24 +6,35 @@ import { cn } from '@/lib/utils';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   text: string;
-  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'danger';
+  variant?: 'primary' | 'secondary' | 'warning' | 'success' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   icon?: LucideIcon;
   selected?: boolean;
 }
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ className, text, variant = 'primary', size = 'md', icon: Icon, selected = false, ...props }, ref) => {
+  (
+    {
+      className,
+      text,
+      variant = 'primary',
+      size = 'md',
+      icon: Icon,
+      selected = false,
+      ...props
+    },
+    ref
+  ) => {
     const baseClasses = 'text-white';
-    const selectedClasses = 'ring-2 ring-offset-2';
+    const selectedClasses = 'ring-1 ring-primary';
 
     const sizes = {
       sm: {
-        badge: 'px-2 py-0.5 text-xs',
+        badge: 'px-2.5 py-1 text-xs',
         icon: 'h-2.5 w-2.5',
       },
       md: {
-        badge: 'px-3 py-1 text-xs',
+        badge: 'px-3 py-1.5 text-sm',
         icon: 'h-3 w-3',
       },
       lg: {
@@ -33,13 +44,13 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     };
 
     const getBackgroundColor = () => {
-      if (variant === 'primary') return 'rgb(var(--primary))'
-      if (variant === 'secondary') return 'rgb(var(--secondary))'
-      if (variant === 'accent') return 'rgb(var(--accent))'
-      if (variant === 'success') return 'rgb(var(--success))'
-      if (variant === 'danger') return 'rgb(var(--danger))'
-      return 'rgb(var(--primary))'
-    }
+      if (variant === 'primary') return 'rgb(var(--primary))';
+      if (variant === 'secondary') return 'rgb(var(--secondary))';
+      if (variant === 'warning') return 'rgb(var(--warning))';
+      if (variant === 'success') return 'rgb(var(--success))';
+      if (variant === 'danger') return 'rgb(var(--danger))';
+      return 'rgb(var(--primary))';
+    };
 
     return (
       <span

@@ -86,6 +86,8 @@ function transformApiItem(apiItem: any): Item {
     location: apiItem.location,
     note: apiItem.note,
     targetDate: apiItem.target_date || apiItem.targetDate,
+    imageUrl: apiItem.image_url || apiItem.imageUrl,
+    metadata: apiItem.metadata,
     createdAt: apiItem.created_at || apiItem.createdAt,
     updatedAt: apiItem.updated_at || apiItem.updatedAt,
   }

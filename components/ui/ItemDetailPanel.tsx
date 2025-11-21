@@ -99,21 +99,24 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Backdrop */}
+    <>
+      <AnimatePresence>
+        {open && (
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-neutral-900/60 backdrop-blur-sm"
+            className="fixed inset-0 z-40" /* bg-neutral-900/20 */
             onClick={onClose}
             aria-hidden="true"
           />
+        )}
+      </AnimatePresence>
 
-          {/* Panel */}
+      <AnimatePresence>
+        {open && (
           <FocusTrap
             active={open}
             focusTrapOptions={{
@@ -124,63 +127,47 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
             }}
           >
             <motion.div
+              key="panel"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 z-50 h-full w-full max-w-2xl overflow-y-auto border-l border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+              transition={{
+                type: 'spring',
+                damping: 30,
+                stiffness: 300,
+              }}
+              className="fixed right-6 top-6 bottom-6 z-50 w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-lg/30 dark:border-neutral-800 dark:bg-neutral-900"
               role="dialog"
               aria-modal="true"
               aria-labelledby="panel-title"
             >
-            {/* Header */}
-            <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white/95 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95">
-              <div className="flex items-center justify-between p-6">
-                <h2
-                  id="panel-title"
-                  className="text-xl font-bold text-neutral-900 dark:text-neutral-100"
-                >
-                  Item Details
-                </h2>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="rounded-lg p-1.5 text-neutral-400 transition-all hover:bg-neutral-100 hover:text-neutral-700 hover:rotate-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-                  aria-label="Close panel"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+              {/* Close button - absolute positioned */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="absolute top-4 right-4 z-20 rounded-full p-2 bg-white/90 text-neutral-600 transition-all hover:bg-white hover:text-neutral-900 hover:rotate-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 dark:bg-neutral-800/90 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 shadow-lg"
+                aria-label="Close panel"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Category icon and name */}
-              <div className="flex items-center gap-3">
-                {(() => {
-                  const CategoryIcon = getIconComponent(item.categoryIcon);
-                  const IconComponent = CategoryIcon || Package;
-                  return (
-                    <div className="flex items-center gap-3 rounded-lg bg-primary-50 px-4 py-2 dark:bg-primary-900/20">
-                      <IconComponent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                      <span className="text-lg font-semibold text-primary-700 dark:text-primary-300">
-                        {item.category}
-                      </span>
-                    </div>
-                  );
-                })()}
-                {item.priority && priorityStyle && (
-                  <Badge
-                    text={priorityStyle.label}
-                    variant={priorityStyle.badge as any}
-                    icon={PriorityIcon}
+              {/* Image - First element if exists */}
+              {item.imageUrl && (
+                <div
+                  className="relative w-full flex items-center justify-center  dark:bg-neutral-800 overflow-hidden"
+                  style={{ maxHeight: '200px' }}
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="object-contain"
+                    style={{ maxHeight: '200px', maxWidth: '100%' }}
                   />
-                )}
-                {item.done && <Badge text="Completed" variant="success" />}
-              </div>
+                </div>
+              )}
 
-              {/* Title */}
-              <div>
+              {/* Title and Action - directly under image */}
+              <div className="px-6 pt-6 pb-4">
                 <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
                   {item.action && (
                     <span className="text-lg font-normal text-accent-600 dark:text-accent-400 mr-2">
@@ -193,215 +180,247 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
                 </h3>
               </div>
 
-              {/* Image */}
-              {item.imageUrl && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    Image
-                  </label>
-                  <div className="rounded-lg overflow-hidden">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="w-full h-auto object-cover"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Metadata */}
-              {item.metadata && (() => {
-                try {
-                  const metadata: ItemMetadata = JSON.parse(item.metadata);
-                  const hasMetadata = Object.values(metadata).some(v => v && v.trim() !== '');
-
-                  if (!hasMetadata) return null;
-
-                  return (
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                        Details
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {metadata.year && (
-                          <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
-                            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Year</p>
-                            <p className="text-sm text-neutral-900 dark:text-neutral-100">{metadata.year}</p>
-                          </div>
-                        )}
-                        {metadata.creator && (
-                          <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
-                            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Creator</p>
-                            <p className="text-sm text-neutral-900 dark:text-neutral-100">{metadata.creator}</p>
-                          </div>
-                        )}
-                        {metadata.genre && (
-                          <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
-                            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Genre</p>
-                            <p className="text-sm text-neutral-900 dark:text-neutral-100">{metadata.genre}</p>
-                          </div>
-                        )}
-                        {metadata.rating && (
-                          <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
-                            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Rating</p>
-                            <p className="text-sm text-neutral-900 dark:text-neutral-100">{metadata.rating}</p>
-                          </div>
-                        )}
-                        {metadata.duration && (
-                          <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
-                            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Duration</p>
-                            <p className="text-sm text-neutral-900 dark:text-neutral-100">{metadata.duration}</p>
-                          </div>
-                        )}
+              {/* Content */}
+              <div className="px-6 pb-6 space-y-6">
+                {/* Category icon and name */}
+                <div className="flex items-center gap-3">
+                  {(() => {
+                    const CategoryIcon = getIconComponent(item.categoryIcon);
+                    const IconComponent = CategoryIcon || Package;
+                    return (
+                      <div className="flex items-center gap-3 rounded-lg bg-primary-50 px-4 py-2 dark:bg-primary-900/20">
+                        <IconComponent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                        <span className="text-lg font-semibold text-primary-700 dark:text-primary-300">
+                          {item.category}
+                        </span>
                       </div>
-                    </div>
-                  );
-                } catch (e) {
-                  console.error('Failed to parse metadata:', e);
-                  return null;
-                }
-              })()}
-
-              {/* Description */}
-              {item.description && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    Description
-                  </label>
-                  <p className="text-base text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
-                    {item.description}
-                  </p>
+                    );
+                  })()}
+                  {item.priority && priorityStyle && (
+                    <Badge
+                      text={priorityStyle.label}
+                      variant={priorityStyle.badge as any}
+                      icon={PriorityIcon}
+                    />
+                  )}
+                  {item.done && <Badge text="Completed" variant="success" />}
                 </div>
-              )}
 
-              {/* URL */}
-              {item.url && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    <LinkIcon className="inline h-4 w-4 mr-1" />
-                    URL
-                  </label>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:underline break-all"
-                  >
-                    {item.url}
-                  </a>
-                </div>
-              )}
+                {/* Metadata */}
+                {item.metadata &&
+                  (() => {
+                    try {
+                      const metadata: ItemMetadata = JSON.parse(item.metadata);
+                      const hasMetadata = Object.values(metadata).some(
+                        (v) => v && v.trim() !== ''
+                      );
 
-              {/* Location */}
-              {item.location && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    <MapPin className="inline h-4 w-4 mr-1" />
-                    Location
-                  </label>
-                  <p className="text-base text-neutral-700 dark:text-neutral-300">
-                    {item.location}
-                  </p>
-                </div>
-              )}
+                      if (!hasMetadata) return null;
 
-              {/* Target Date */}
-              {item.targetDate && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    <Calendar className="inline h-4 w-4 mr-1" />
-                    Target Date
-                  </label>
-                  <p className="text-base text-neutral-700 dark:text-neutral-300">
-                    {formatDate(item.targetDate)}
-                  </p>
-                </div>
-              )}
+                      return (
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                            Details
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            {metadata.year && (
+                              <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                  Year
+                                </p>
+                                <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                                  {metadata.year}
+                                </p>
+                              </div>
+                            )}
+                            {metadata.creator && (
+                              <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                  Creator
+                                </p>
+                                <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                                  {metadata.creator}
+                                </p>
+                              </div>
+                            )}
+                            {metadata.genre && (
+                              <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                  Genre
+                                </p>
+                                <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                                  {metadata.genre}
+                                </p>
+                              </div>
+                            )}
+                            {metadata.rating && (
+                              <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                  Rating
+                                </p>
+                                <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                                  {metadata.rating}
+                                </p>
+                              </div>
+                            )}
+                            {metadata.duration && (
+                              <div className="rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                  Duration
+                                </p>
+                                <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                                  {metadata.duration}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    } catch (e) {
+                      console.error('Failed to parse metadata:', e);
+                      return null;
+                    }
+                  })()}
 
-              {/* Note */}
-              {item.note && (
-                <div>
-                  <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                    <FileText className="inline h-4 w-4 mr-1" />
-                    Notes
-                  </label>
-                  <div className="rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800">
+                {/* Description */}
+                {item.description && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                      Description
+                    </label>
                     <p className="text-base text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
-                      {item.note}
+                      {item.description}
                     </p>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* AI Enrichment */}
-              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                <AIEnrichment
-                  itemId={item.id}
-                  title={item.title}
-                  categoryId={item.categoryId}
-                  location={item.location || undefined}
-                  onEnriched={() => {
-                    // Refresh the item data
-                    onRefresh?.();
-                  }}
-                />
-              </div>
+                {/* URL */}
+                {item.url && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                      <LinkIcon className="inline h-4 w-4 mr-1" />
+                      URL
+                    </label>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:underline break-all"
+                    >
+                      {item.url}
+                    </a>
+                  </div>
+                )}
 
-              {/* AI Suggestions */}
-              {item.action && (
+                {/* Location */}
+                {item.location && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                      <MapPin className="inline h-4 w-4 mr-1" />
+                      Location
+                    </label>
+                    <p className="text-base text-neutral-700 dark:text-neutral-300">
+                      {item.location}
+                    </p>
+                  </div>
+                )}
+
+                {/* Target Date */}
+                {item.targetDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                      <Calendar className="inline h-4 w-4 mr-1" />
+                      Target Date
+                    </label>
+                    <p className="text-base text-neutral-700 dark:text-neutral-300">
+                      {formatDate(item.targetDate)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Note */}
+                {item.note && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
+                      <FileText className="inline h-4 w-4 mr-1" />
+                      Notes
+                    </label>
+                    <div className="rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800">
+                      <p className="text-base text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                        {item.note}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Enrichment */}
                 <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                  <AISuggestions
-                    action={item.action}
+                  <AIEnrichment
+                    itemId={item.id}
                     title={item.title}
-                    category={item.category}
                     categoryId={item.categoryId}
                     location={item.location || undefined}
+                    onEnriched={() => {
+                      // Refresh the item data
+                      onRefresh?.();
+                    }}
                   />
                 </div>
-              )}
 
-              {/* Metadata: Created and Updated dates */}
-              {(item.createdAt || item.updatedAt) && (
-                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-1">
-                  {item.createdAt && (
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      Created on {formatDate(item.createdAt)}
-                    </p>
-                  )}
-                  {item.updatedAt && (
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      Last updated on {formatDate(item.updatedAt)}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+                {/* AI Suggestions */}
+                {item.action && (
+                  <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                    <AISuggestions
+                      action={item.action}
+                      title={item.title}
+                      category={item.category}
+                      categoryId={item.categoryId}
+                      location={item.location || undefined}
+                    />
+                  </div>
+                )}
 
-            {/* Footer with actions */}
-            <div className="sticky bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur-sm p-6 dark:border-neutral-800 dark:bg-neutral-900/95">
-              <div className="flex gap-3">
-                <Button
-                  variant="primary"
-                  icon={<Edit2 className="h-4 w-4" />}
-                  onClick={onEdit}
-                  className="flex-1"
-                >
-                  Edit Item
-                </Button>
-                <Button
-                  variant="danger"
-                  icon={<Trash2 className="h-4 w-4" />}
-                  onClick={onDelete}
-                >
-                  Delete
-                </Button>
+                {/* Metadata: Created and Updated dates */}
+                {(item.createdAt || item.updatedAt) && (
+                  <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-1">
+                    {item.createdAt && (
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Created on {formatDate(item.createdAt)}
+                      </p>
+                    )}
+                    {item.updatedAt && (
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Last updated on {formatDate(item.updatedAt)}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          </motion.div>
-        </FocusTrap>
-        </>
-      )}
-    </AnimatePresence>
+
+              {/* Footer with actions */}
+              <div className="sticky bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur-sm p-6 dark:border-neutral-800 dark:bg-neutral-900/95">
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    variant="ghost"
+                    onClick={onEdit}
+                    aria-label="Edit item"
+                  >
+                    <Edit2 className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={onDelete}
+                    aria-label="Delete item"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </FocusTrap>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

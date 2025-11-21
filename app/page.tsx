@@ -9,7 +9,6 @@ import { useActions } from '@/lib/hooks/useActions';
 import { useItemActions } from '@/lib/hooks/useItemActions';
 import { useItemFilters } from '@/lib/hooks/useItemFilters';
 import { useKeyboardShortcut } from '@/lib/hooks/useKeyboardShortcut';
-import { useBulkSelection } from '@/lib/hooks/useBulkSelection';
 import { useToast } from '@/lib/hooks/useToast';
 import {
   getCategoryLabel,
@@ -28,7 +27,6 @@ import ItemDetailPanel from '@/components/ui/ItemDetailPanel';
 import ListItemSkeleton from '@/components/ui/ListItemSkeleton';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 import ItemFilters from '@/components/features/ItemFilters';
-import BulkActionsToolbar from '@/components/features/BulkActionsToolbar';
 import QuickAddWidget from '@/components/features/QuickAddWidget';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
@@ -38,6 +36,7 @@ export default function HomePage() {
     items: allItems,
     loading,
     error,
+    refresh,
     createNewItem,
     updateExistingItem,
     deleteExistingItem,
@@ -93,80 +92,18 @@ export default function HomePage() {
   // Toast notifications
   const toast = useToast();
 
-  // Bulk selection
-  const bulkSelection = useBulkSelection(filteredItems);
-
   // Keyboard shortcuts
   useKeyboardShortcut(itemActions.openAddModal, {
     key: 'n',
     meta: true, // Cmd+N on Mac, Win+N on Windows
-    enabled: !itemActions.isModalOpen && !bulkSelection.isSelectionMode,
+    enabled: !itemActions.isModalOpen,
   });
 
   useKeyboardShortcut(() => setHideDone(!hideDone), {
     key: 'h',
     meta: true, // Cmd+H on Mac, Win+H on Windows
-    enabled: !itemActions.isModalOpen && !bulkSelection.isSelectionMode,
-  });
-
-  useKeyboardShortcut(bulkSelection.toggleSelectionMode, {
-    key: 's',
-    meta: true, // Cmd+S on Mac, Win+S on Windows
     enabled: !itemActions.isModalOpen,
-    preventDefault: true,
   });
-
-  // Bulk actions handlers
-  const handleBulkMarkAsDone = async () => {
-    try {
-      await Promise.all(
-        bulkSelection.selectedItems.map((item) =>
-          updateExistingItem(item.id, { status: 'done' })
-        )
-      );
-      toast.success(`Marked ${bulkSelection.selectedCount} items as done`);
-      bulkSelection.clearSelection();
-    } catch (error) {
-      toast.error('Failed to update items');
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(
-        bulkSelection.selectedItems.map((item) => deleteExistingItem(item.id))
-      );
-      toast.success(`Deleted ${bulkSelection.selectedCount} items`);
-      bulkSelection.clearSelection();
-      bulkSelection.toggleSelectionMode();
-    } catch (error) {
-      toast.error('Failed to delete items');
-    }
-  };
-
-  const handleBulkChangeCategory = async (newCategoryId: string) => {
-    try {
-      // Use fetch API directly since UpdateItemInput doesn't include categoryId
-      await Promise.all(
-        bulkSelection.selectedItems.map(async (item) => {
-          const response = await fetch(`/api/items/${item.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ category_id: newCategoryId }),
-          });
-          if (!response.ok) throw new Error('Failed to update');
-        })
-      );
-      toast.success(
-        `Changed category for ${bulkSelection.selectedCount} items`
-      );
-      bulkSelection.clearSelection();
-      // Refresh items to show new categories
-      window.location.reload();
-    } catch (error) {
-      toast.error('Failed to change category');
-    }
-  };
 
   // Quick add handler
   const handleQuickAdd = async (data: {
@@ -205,8 +142,8 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
                 <ListItemSkeleton key={index} />
               ))}
             </div>
@@ -241,17 +178,10 @@ export default function HomePage() {
                 selectedPriorities={selectedPriorities}
                 onPriorityChange={setSelectedPriorities}
                 onAddClick={itemActions.openAddModal}
-                selectionMode={bulkSelection.isSelectionMode}
-                onToggleSelectionMode={bulkSelection.toggleSelectionMode}
               />
 
               {/* Quick Add Widget */}
-              {!bulkSelection.isSelectionMode && (
-                <QuickAddWidget
-                  onAdd={handleQuickAdd}
-                  categories={categories}
-                />
-              )}
+              <QuickAddWidget onAdd={handleQuickAdd} categories={categories} />
 
               {/* Items list or empty state */}
               {filteredItems.length === 0 ? (
@@ -306,11 +236,9 @@ export default function HomePage() {
                           done={item.status === 'done'}
                           description={item.description || undefined}
                           priority={item.priority}
+                          imageUrl={item.imageUrl}
                           onClick={itemActions.handleItemClick}
                           onToggleDone={itemActions.handleToggleDone}
-                          selectionMode={bulkSelection.isSelectionMode}
-                          selected={bulkSelection.isSelected(item.id)}
-                          onSelectionChange={bulkSelection.toggleItemSelection}
                         />
                       </motion.div>
                     ))}
@@ -512,6 +440,8 @@ export default function HomePage() {
                 location: itemActions.detailPanelItem.location,
                 note: itemActions.detailPanelItem.note,
                 targetDate: itemActions.detailPanelItem.targetDate,
+                imageUrl: itemActions.detailPanelItem.imageUrl,
+                metadata: itemActions.detailPanelItem.metadata,
                 createdAt: itemActions.detailPanelItem.createdAt,
                 updatedAt: itemActions.detailPanelItem.updatedAt,
               }
@@ -519,22 +449,11 @@ export default function HomePage() {
         }
         onEdit={itemActions.handleEditFromPanel}
         onDelete={itemActions.handleDeleteFromPanel}
+        onRefresh={refresh}
       />
 
       {/* Keyboard shortcuts help */}
       <KeyboardShortcutsHelp />
-
-      {/* Bulk Actions Toolbar */}
-      {bulkSelection.isSelectionMode && bulkSelection.selectedCount > 0 && (
-        <BulkActionsToolbar
-          selectedCount={bulkSelection.selectedCount}
-          onClose={bulkSelection.clearSelection}
-          onMarkAsDone={handleBulkMarkAsDone}
-          onDelete={handleBulkDelete}
-          onChangeCategory={handleBulkChangeCategory}
-          categories={categories}
-        />
-      )}
     </AuthenticatedLayout>
   );
 }

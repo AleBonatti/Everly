@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /**
  * Multi-Select Category Filter Component
@@ -7,22 +7,22 @@
  * Selected categories are displayed as removable tags.
  */
 
-import React, { useState, useRef, useEffect } from 'react'
-import { X, ChevronDown, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import React, { useState, useRef, useEffect } from 'react';
+import { X, ChevronDown, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface Category {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 export interface MultiSelectCategoryFilterProps {
-  categories: Category[]
-  selectedCategories: string[]
-  onChange: (selectedCategories: string[]) => void
-  label?: string
-  placeholder?: string
-  disabled?: boolean
+  categories: Category[];
+  selectedCategories: string[];
+  onChange: (selectedCategories: string[]) => void;
+  label?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
 const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
@@ -33,77 +33,86 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
   placeholder = 'Search categories...',
   disabled = false,
 }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-        setSearchQuery('')
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setSearchQuery('');
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Focus search input when dropdown opens
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus()
+      searchInputRef.current.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Filter categories based on search query
   const filteredCategories = categories.filter((category) =>
     category.label.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  );
 
   // Get selected category objects
   const selectedCategoryObjects = categories.filter((cat) =>
     selectedCategories.includes(cat.value)
-  )
+  );
 
   // Toggle category selection
   const toggleCategory = (categoryValue: string) => {
     if (selectedCategories.includes(categoryValue)) {
-      onChange(selectedCategories.filter((id) => id !== categoryValue))
+      onChange(selectedCategories.filter((id) => id !== categoryValue));
     } else {
-      onChange([...selectedCategories, categoryValue])
+      onChange([...selectedCategories, categoryValue]);
     }
-  }
+  };
 
   // Remove category
   const removeCategory = (categoryValue: string) => {
-    onChange(selectedCategories.filter((id) => id !== categoryValue))
-  }
+    onChange(selectedCategories.filter((id) => id !== categoryValue));
+  };
 
   // Clear all selections
   const clearAll = () => {
-    onChange([])
-  }
+    onChange([]);
+  };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-[250px]">
       {label && (
-        <label className={cn('text-sm font-medium text-neutral-700 dark:text-neutral-300', disabled && 'opacity-50')}>
+        <label
+          className={cn(
+            'text-sm font-medium text-neutral-700 dark:text-neutral-300',
+            disabled && 'opacity-50'
+          )}
+        >
           {label}
         </label>
       )}
 
       {/* Selected tags */}
       {selectedCategoryObjects.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {selectedCategoryObjects.map((category) => (
             <div
               key={category.value}
-              className="flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
+              className="flex items-center gap-1 rounded-full bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary dark:bg-primary-900/30 dark:text-primary-400"
             >
               <span>{category.label}</span>
               <button
@@ -111,7 +120,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
                 onClick={() => removeCategory(category.value)}
                 disabled={disabled}
                 className={cn(
-                  'rounded-full p-0.5 transition-colors hover:bg-primary-100 dark:hover:bg-primary-900/50',
+                  'rounded-full transition-colors hover:bg-secondary dark:hover:bg-primary-900/50',
                   disabled && 'cursor-not-allowed opacity-50'
                 )}
                 aria-label={`Remove ${category.label}`}
@@ -126,7 +135,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
               onClick={clearAll}
               disabled={disabled}
               className={cn(
-                'rounded-full px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800',
+                'rounded-full px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800',
                 disabled && 'cursor-not-allowed opacity-50'
               )}
             >
@@ -143,20 +152,23 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={cn(
-            'flex w-full items-center justify-between gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-left text-sm transition-colors dark:bg-neutral-900 dark:border-neutral-700',
+            'flex w-full items-center justify-between gap-2 rounded-full bg-white px-4 py-1.5 text-left text-sm transition-colors dark:bg-neutral-900 dark:border-neutral-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-primary-500',
             'hover:border-neutral-400 dark:hover:border-neutral-600',
             disabled && 'cursor-not-allowed opacity-50',
-            isOpen && 'border-primary-500 ring-2 ring-primary-500'
+            isOpen && 'border-secondary ring-2 ring-secondary'
           )}
         >
-          <span className="text-neutral-600 dark:text-neutral-400">
+          <span className="text-secondary dark:text-neutral-400">
             {selectedCategories.length === 0
-              ? 'Select categories...'
+              ? 'Filter by category...'
               : `${selectedCategories.length} selected`}
           </span>
           <ChevronDown
-            className={cn('h-4 w-4 text-neutral-400 dark:text-neutral-500 transition-transform', isOpen && 'rotate-180')}
+            className={cn(
+              'h-4 w-4 text-neutral-400 dark:text-neutral-500 transition-transform',
+              isOpen && 'rotate-180'
+            )}
           />
         </button>
 
@@ -173,7 +185,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={placeholder}
-                  className="w-full rounded-md border border-neutral-300 py-2 pl-9 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                  className="w-full rounded-md border border-neutral-300 py-2 pl-9 pr-3 text-sm focus:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
               </div>
             </div>
@@ -186,7 +198,9 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
                 </div>
               ) : (
                 filteredCategories.map((category) => {
-                  const isSelected = selectedCategories.includes(category.value)
+                  const isSelected = selectedCategories.includes(
+                    category.value
+                  );
                   return (
                     <button
                       key={category.value}
@@ -195,16 +209,25 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
                       className={cn(
                         'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors',
                         'hover:bg-neutral-50 dark:hover:bg-neutral-800',
-                        isSelected && 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                        isSelected &&
+                          'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
                       )}
                     >
                       <div
                         className={cn(
                           'flex h-4 w-4 items-center justify-center rounded border-2',
                           isSelected
-                            ? 'border-primary-500 bg-primary-500 dark:border-primary-400 dark:bg-primary-400'
+                            ? 'bg-primary dark:bg-primary'
                             : 'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800'
                         )}
+                        style={
+                          isSelected
+                            ? {
+                                backgroundColor: 'rgb(var(--primary))',
+                                borderColor: 'rgb(var(--primary))',
+                              }
+                            : undefined
+                        }
                       >
                         {isSelected && (
                           <svg
@@ -224,7 +247,7 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
                       </div>
                       <span className="flex-1">{category.label}</span>
                     </button>
-                  )
+                  );
                 })
               )}
             </div>
@@ -232,9 +255,9 @@ const MultiSelectCategoryFilter: React.FC<MultiSelectCategoryFilterProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-MultiSelectCategoryFilter.displayName = 'MultiSelectCategoryFilter'
+MultiSelectCategoryFilter.displayName = 'MultiSelectCategoryFilter';
 
-export default MultiSelectCategoryFilter
+export default MultiSelectCategoryFilter;
