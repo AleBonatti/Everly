@@ -14,7 +14,6 @@ import {
   Circle,
   Package,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { getIconComponent } from '@/lib/utils/icon-utils';
 import Badge from './Badge';
 import Button from './Button';
@@ -375,26 +374,29 @@ const ItemDetailPanel: React.FC<ItemDetailPanelProps> = ({
 
                   {/* AI Actions */}
                   <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                    <div className="flex gap-3">
-                      <AIEnrichment
-                        itemId={item.id}
-                        title={item.title}
-                        categoryId={item.categoryId}
-                        location={item.location || undefined}
-                        onEnriched={() => {
-                          // Refresh the item data
-                          onRefresh?.();
-                        }}
-                      />
-                      {item.action && (
-                        <AISuggestions
-                          action={item.action}
+                    <div className="space-y-4">
+                      {/* AI Buttons Row */}
+                      <div className="flex gap-3 flex-wrap">
+                        <AIEnrichment
+                          itemId={item.id}
                           title={item.title}
-                          category={item.category}
                           categoryId={item.categoryId}
                           location={item.location || undefined}
+                          onEnriched={() => {
+                            // Refresh the item data
+                            onRefresh?.();
+                          }}
                         />
-                      )}
+                        {item.action && (
+                          <AISuggestions
+                            action={item.action}
+                            title={item.title}
+                            category={item.category}
+                            categoryId={item.categoryId}
+                            location={item.location || undefined}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
