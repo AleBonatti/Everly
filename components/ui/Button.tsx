@@ -6,8 +6,15 @@ import { cn } from '@/lib/utils';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'outline'
+    | 'ghost'
+    | 'danger'
+    | 'icon';
+  size?: 'circle' | 'sm' | 'md' | 'lg' | 'none';
   loading?: boolean;
   icon?: React.ReactNode;
 }
@@ -37,11 +44,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-white border border-neutral-200 shadow-sm hover:shadow-md hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:hover:bg-neutral-800',
       ghost: 'hover:bg-neutral-200 dark:hover:bg-neutral-800',
       danger: 'text-white shadow-sm hover:shadow-md hover:opacity-90',
+      icon: 'text-secondary hover:text-primary',
     };
 
     const sizes = {
+      none: 'text-sm',
+      circle: 'h-8 px-2 text-sm',
       sm: 'h-6 px-2 text-xs',
-      md: 'h-8 px-2 text-base',
+      md: 'h-8 px-4 text-sm',
       lg: 'h-10 px-6 text-lg',
     };
 

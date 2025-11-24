@@ -83,9 +83,7 @@ export default function AIEnrichment({
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to enrich item:', err);
-      setError(
-        err instanceof Error ? err.message : 'Failed to enrich item'
-      );
+      setError(err instanceof Error ? err.message : 'Failed to enrich item');
     } finally {
       setLoading(false);
     }
@@ -94,7 +92,7 @@ export default function AIEnrichment({
   return (
     <div className="space-y-2">
       <Button
-        variant="secondary"
+        variant="accent"
         icon={
           loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -106,7 +104,6 @@ export default function AIEnrichment({
         }
         onClick={handleEnrich}
         disabled={loading}
-        className="w-full"
       >
         {loading ? 'Enriching...' : success ? 'Enriched!' : 'Enrich with AI'}
       </Button>
@@ -114,7 +111,9 @@ export default function AIEnrichment({
       {error && (
         <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 p-3 dark:border-danger-800 dark:bg-danger-950">
           <AlertCircle className="h-4 w-4 flex-shrink-0 text-danger-600 dark:text-danger-400 mt-0.5" />
-          <p className="text-sm text-danger-700 dark:text-danger-300">{error}</p>
+          <p className="text-sm text-danger-700 dark:text-danger-300">
+            {error}
+          </p>
         </div>
       )}
     </div>

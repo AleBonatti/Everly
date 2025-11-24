@@ -85,11 +85,10 @@ export default function AISuggestions({
       {/* Find Similar Button */}
       {!showSuggestions && (
         <Button
-          variant="ghost"
+          variant="accent"
           icon={<Sparkles className="h-4 w-4" />}
           onClick={fetchSuggestions}
           disabled={loading}
-          className="w-full"
         >
           Find Similar
         </Button>
@@ -107,8 +106,8 @@ export default function AISuggestions({
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                <Sparkles className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                   Similar Suggestions
                 </h3>
               </div>
@@ -173,17 +172,17 @@ export default function AISuggestions({
                       </div>
                     )}
                     <div className="p-4">
-                      <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
+                      <h4 className="font-medium text-base text-primary dark:text-neutral-100">
                         {suggestion.title}
                       </h4>
                       {(suggestion.year || suggestion.creator) && (
-                        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-500">
+                        <p className="mt-1 text-xs text-secondary dark:text-neutral-500">
                           {[suggestion.creator, suggestion.year]
                             .filter(Boolean)
                             .join(' • ')}
                         </p>
                       )}
-                      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                      <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
                         {suggestion.description}
                       </p>
                     </div>
