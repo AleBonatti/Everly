@@ -131,6 +131,7 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                       variant={theme === 'light' ? 'primary' : 'secondary'}
                       onClick={toggleTheme}
                       aria-label="Toggle theme"
+                      size="circle"
                     >
                       {theme === 'light' ? (
                         <Moon className="h-4 w-4" />
@@ -141,13 +142,13 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
                   </Tooltip>
                   <Tooltip content="Account">
                     <Link href="/account">
-                      <Button variant="primary">
+                      <Button variant="primary" size="circle">
                         <Cog className="h-4 w-4" />
                       </Button>
                     </Link>
                   </Tooltip>
                   <Tooltip content="Logout">
-                    <Button variant="primary" onClick={onLogout}>
+                    <Button variant="primary" size="circle" onClick={onLogout}>
                       <LogOut className="h-4 w-4" />
                     </Button>
                   </Tooltip>

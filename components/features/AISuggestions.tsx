@@ -85,11 +85,10 @@ export default function AISuggestions({
       {/* Find Similar Button */}
       {!showSuggestions && (
         <Button
-          variant="ghost"
+          variant="accent"
           icon={<Sparkles className="h-4 w-4" />}
           onClick={fetchSuggestions}
           disabled={loading}
-          className="w-full"
         >
           Find Similar
         </Button>
