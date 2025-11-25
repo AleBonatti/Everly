@@ -90,7 +90,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for unique constraint violation
-    if (error instanceof Error && error.message.includes('unique')) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('unique') ||
+        error.message.includes('duplicate key') ||
+        (error as any).code === '23505')
+    ) {
       return NextResponse.json(
         { error: 'An action with this name already exists' },
         { status: 409 }
