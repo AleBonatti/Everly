@@ -138,12 +138,12 @@ export default function AdminUsersPage() {
     <AuthenticatedLayout>
       {/* Page Header */}
       <div className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="py-6">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            User Management
+        <div className="p-4">
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            Users
           </h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-            Manage user accounts and roles
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            Manage user accounts, roles, and permissions
           </p>
         </div>
       </div>

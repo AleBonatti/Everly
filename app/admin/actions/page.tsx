@@ -139,14 +139,14 @@ export default function AdminActionsPage() {
   return (
     <AuthenticatedLayout>
       {/* Page Header */}
-      <div className="border-b border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="py-8">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            Action Management
+      <div className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="p-4">
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            Actions
           </h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-            Manage actions that can be associated with items (e.g.,
-            &quot;watch&quot;, &quot;listen to&quot;, &quot;visit&quot;)
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            Define verbs to describe what you want to do with your items (watch,
+            read, visit, play)
           </p>
         </div>
       </div>
