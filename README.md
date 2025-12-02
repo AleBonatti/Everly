@@ -1,4 +1,4 @@
-# FutureList - Personal Wishlist App
+# Everly - A list of things worth doing
 
 A minimalist and delightful app to keep track of future activities—movies to watch, restaurants to try, places to visit, books to read. Blending the immediacy of a to-do list with the spirit of a wishlist.
 
@@ -37,12 +37,14 @@ A minimalist and delightful app to keep track of future activities—movies to w
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd SpecToDo
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
@@ -58,11 +60,13 @@ A minimalist and delightful app to keep track of future activities—movies to w
      ```
 
 4. **Configure environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
 
    Edit `.env.local` with your credentials:
+
    ```env
    # Supabase
    NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
@@ -90,7 +94,6 @@ A minimalist and delightful app to keep track of future activities—movies to w
    **Google Places API Setup (Required for place images):**
 
    The Places API requires billing to be enabled on your Google Cloud project:
-
    1. Go to https://console.cloud.google.com/billing and enable billing
    2. Enable Places API (New) at https://console.cloud.google.com/apis/library/places-backend.googleapis.com
    3. Create or select an API key at https://console.cloud.google.com/apis/credentials
@@ -101,6 +104,7 @@ A minimalist and delightful app to keep track of future activities—movies to w
    5. You get $200 monthly free credit which covers typical usage
 
 5. **Generate TypeScript types from Supabase**
+
    ```bash
    pnpm supabase gen types typescript --project-id <your-project-id> > lib/supabase/types.ts
    ```
@@ -118,6 +122,7 @@ A minimalist and delightful app to keep track of future activities—movies to w
      - Default → `generic`
 
 7. **Start development server**
+
    ```bash
    pnpm dev
    ```
@@ -138,6 +143,7 @@ A minimalist and delightful app to keep track of future activities—movies to w
 Per project constitution, all testing is manual. Test scenarios are documented in `specs/001-future-list-app/quickstart.md` (lines 222-271).
 
 Key testing checklist:
+
 - ✓ Create account, login, logout
 - ✓ Add item with title + category (<10 seconds)
 - ✓ Mark items as done/todo
