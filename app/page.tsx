@@ -1,6 +1,11 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Inbox, AlertCircle } from 'lucide-react';
 import { useItems } from '@/lib/hooks/useItems';
@@ -88,8 +93,9 @@ export default function HomePage() {
   } = useItemFilters(allItems);
 
   // Infinite scroll pagination
-  const ITEMS_PER_PAGE = 12;
-  const [displayedItemsCount, setDisplayedItemsCount] = useState(ITEMS_PER_PAGE);
+  const ITEMS_PER_PAGE = 8;
+  const [displayedItemsCount, setDisplayedItemsCount] =
+    useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -105,40 +111,35 @@ export default function HomePage() {
 
   const hasMore = displayedItemsCount < filteredItems.length;
 
-  // Load more items
-  const loadMoreItems = useCallback(() => {
-    if (!hasMore || isLoadingMore) return;
-
-    setIsLoadingMore(true);
-    // Simulate a small delay for smooth UX
-    setTimeout(() => {
-      setDisplayedItemsCount((prev) => prev + ITEMS_PER_PAGE);
-      setIsLoadingMore(false);
-    }, 300);
-  }, [hasMore, isLoadingMore]);
-
   // Intersection Observer for infinite scroll
   useEffect(() => {
+    const currentRef = loadMoreRef.current;
+    if (!currentRef || !hasMore) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          loadMoreItems();
+        const [entry] = entries;
+        if (entry.isIntersecting && !isLoadingMore) {
+          setIsLoadingMore(true);
+          // Simulate a small delay for smooth UX
+          setTimeout(() => {
+            setDisplayedItemsCount((prev) => prev + ITEMS_PER_PAGE);
+            setIsLoadingMore(false);
+          }, 300);
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+        rootMargin: '100px' // Trigger 100px before the element comes into view
+      }
     );
 
-    const currentRef = loadMoreRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
+    observer.observe(currentRef);
 
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
+      observer.disconnect();
     };
-  }, [hasMore, isLoadingMore, loadMoreItems]);
+  }, [hasMore, isLoadingMore, displayedItemsCount]);
 
   // Keyboard shortcuts
   useKeyboardShortcut(itemActions.openAddModal, {
@@ -152,7 +153,6 @@ export default function HomePage() {
     meta: true, // Cmd+H on Mac, Win+H on Windows
     enabled: !itemActions.isModalOpen,
   });
-
 
   return (
     <AuthenticatedLayout>
@@ -280,20 +280,31 @@ export default function HomePage() {
                     </AnimatePresence>
                   </motion.div>
 
-                  {/* Infinite scroll trigger */}
+                  {/* Infinite scroll trigger and loading indicator */}
                   {hasMore && (
-                    <div ref={loadMoreRef} className="mt-8 flex justify-center">
+                    <div className="mt-8">
                       {isLoadingMore && (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4"
                         >
-                          {Array.from({ length: Math.min(ITEMS_PER_PAGE, filteredItems.length - displayedItemsCount) }).map((_, index) => (
+                          {Array.from({
+                            length: Math.min(
+                              ITEMS_PER_PAGE,
+                              filteredItems.length - displayedItemsCount
+                            ),
+                          }).map((_, index) => (
                             <ListItemSkeleton key={`skeleton-${index}`} />
                           ))}
                         </motion.div>
                       )}
+                      {/* Invisible trigger element for intersection observer */}
+                      <div
+                        ref={loadMoreRef}
+                        className="h-20 w-full"
+                        aria-hidden="true"
+                      />
                     </div>
                   )}
                 </>
