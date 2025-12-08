@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Inbox, AlertCircle } from 'lucide-react';
 import { useItems } from '@/lib/hooks/useItems';
@@ -9,7 +9,6 @@ import { useActions } from '@/lib/hooks/useActions';
 import { useItemActions } from '@/lib/hooks/useItemActions';
 import { useItemFilters } from '@/lib/hooks/useItemFilters';
 import { useKeyboardShortcut } from '@/lib/hooks/useKeyboardShortcut';
-import { useToast } from '@/lib/hooks/useToast';
 import {
   getCategoryLabel,
   getCategoryIcon,
@@ -27,7 +26,6 @@ import ItemDetailPanel from '@/components/ui/ItemDetailPanel';
 import ListItemSkeleton from '@/components/ui/ListItemSkeleton';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 import ItemFilters from '@/components/features/ItemFilters';
-import QuickAddWidget from '@/components/features/QuickAddWidget';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function HomePage() {
@@ -89,8 +87,58 @@ export default function HomePage() {
     filteredItems,
   } = useItemFilters(allItems);
 
-  // Toast notifications
-  const toast = useToast();
+  // Infinite scroll pagination
+  const ITEMS_PER_PAGE = 12;
+  const [displayedItemsCount, setDisplayedItemsCount] = useState(ITEMS_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset displayed items when filters change
+  useEffect(() => {
+    setDisplayedItemsCount(ITEMS_PER_PAGE);
+  }, [filteredItems]);
+
+  // Get currently displayed items
+  const displayedItems = useMemo(() => {
+    return filteredItems.slice(0, displayedItemsCount);
+  }, [filteredItems, displayedItemsCount]);
+
+  const hasMore = displayedItemsCount < filteredItems.length;
+
+  // Load more items
+  const loadMoreItems = useCallback(() => {
+    if (!hasMore || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    // Simulate a small delay for smooth UX
+    setTimeout(() => {
+      setDisplayedItemsCount((prev) => prev + ITEMS_PER_PAGE);
+      setIsLoadingMore(false);
+    }, 300);
+  }, [hasMore, isLoadingMore]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMoreItems();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasMore, isLoadingMore, loadMoreItems]);
 
   // Keyboard shortcuts
   useKeyboardShortcut(itemActions.openAddModal, {
@@ -105,17 +153,6 @@ export default function HomePage() {
     enabled: !itemActions.isModalOpen,
   });
 
-  // Quick add handler
-  const handleQuickAdd = async (data: {
-    title: string;
-    categoryId: string;
-  }) => {
-    await createNewItem({
-      ...data,
-      status: 'todo',
-    });
-    toast.success('Item added successfully');
-  };
 
   return (
     <AuthenticatedLayout>
@@ -180,9 +217,6 @@ export default function HomePage() {
                 onAddClick={itemActions.openAddModal}
               />
 
-              {/* Quick Add Widget */}
-              <QuickAddWidget onAdd={handleQuickAdd} categories={categories} />
-
               {/* Items list or empty state */}
               {filteredItems.length === 0 ? (
                 <EmptyState
@@ -207,43 +241,62 @@ export default function HomePage() {
                   }
                 />
               ) : (
-                <motion.div
-                  className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4"
-                  layout
-                >
-                  <AnimatePresence mode="popLayout">
-                    {filteredItems.map((item, index) => (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.2, delay: index * 0.05 }}
-                        layout
-                      >
-                        <ListItem
-                          id={item.id}
-                          title={item.title}
-                          action={getActionLabel(item.actionId, dbActions)}
-                          category={getCategoryLabel(
-                            item.categoryId,
-                            dbCategories
-                          )}
-                          categoryIcon={getCategoryIcon(
-                            item.categoryId,
-                            dbCategories
-                          )}
-                          done={item.status === 'done'}
-                          description={item.description || undefined}
-                          priority={item.priority}
-                          imageUrl={item.imageUrl}
-                          onClick={itemActions.handleItemClick}
-                          onToggleDone={itemActions.handleToggleDone}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
+                <>
+                  <motion.div
+                    className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4"
+                    layout
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {displayedItems.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                          layout
+                        >
+                          <ListItem
+                            id={item.id}
+                            title={item.title}
+                            action={getActionLabel(item.actionId, dbActions)}
+                            category={getCategoryLabel(
+                              item.categoryId,
+                              dbCategories
+                            )}
+                            categoryIcon={getCategoryIcon(
+                              item.categoryId,
+                              dbCategories
+                            )}
+                            done={item.status === 'done'}
+                            description={item.description || undefined}
+                            priority={item.priority}
+                            imageUrl={item.imageUrl}
+                            onClick={itemActions.handleItemClick}
+                            onToggleDone={itemActions.handleToggleDone}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  {/* Infinite scroll trigger */}
+                  {hasMore && (
+                    <div ref={loadMoreRef} className="mt-8 flex justify-center">
+                      {isLoadingMore && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4"
+                        >
+                          {Array.from({ length: Math.min(ITEMS_PER_PAGE, filteredItems.length - displayedItemsCount) }).map((_, index) => (
+                            <ListItemSkeleton key={`skeleton-${index}`} />
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </motion.div>
           </>
