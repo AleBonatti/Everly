@@ -86,9 +86,11 @@ export default function HomePage() {
     hideDone,
     selectedCategories,
     selectedPriorities,
+    sortBy,
     setHideDone,
     setSelectedCategories,
     setSelectedPriorities,
+    setSortBy,
     filteredItems,
   } = useItemFilters(allItems);
 
@@ -99,10 +101,10 @@ export default function HomePage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Reset displayed items when filters change
+  // Reset displayed items when filters or sort change
   useEffect(() => {
     setDisplayedItemsCount(ITEMS_PER_PAGE);
-  }, [filteredItems]);
+  }, [filteredItems, sortBy]);
 
   // Get currently displayed items
   const displayedItems = useMemo(() => {
@@ -214,6 +216,8 @@ export default function HomePage() {
                 onHideDoneChange={setHideDone}
                 selectedPriorities={selectedPriorities}
                 onPriorityChange={setSelectedPriorities}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
                 onAddClick={itemActions.openAddModal}
               />
 
