@@ -6,6 +6,8 @@ import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
 import MultiSelectCategoryFilter from '@/components/ui/MultiSelectCategoryFilter';
 import Badge from '@/components/ui/Badge';
+import Select from '@/components/ui/Select';
+import type { SortOption } from '@/lib/hooks/useItemFilters';
 
 export interface ItemFiltersProps {
   categories: { value: string; label: string }[];
@@ -15,6 +17,8 @@ export interface ItemFiltersProps {
   onHideDoneChange: (checked: boolean) => void;
   selectedPriorities: string[];
   onPriorityChange: (priorities: string[]) => void;
+  sortBy: SortOption;
+  onSortChange: (sort: SortOption) => void;
   onAddClick: () => void;
 }
 
@@ -26,6 +30,8 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
   onHideDoneChange,
   selectedPriorities,
   onPriorityChange,
+  sortBy,
+  onSortChange,
   onAddClick,
 }) => {
   const priorityIcons = {
@@ -50,9 +56,15 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
 
   return (
     <div className="mb-6 space-y-4">
-      {/* Top row: Category filter, Toggle, and Add button */}
+      {/* Top row: Sort, Category filter, Toggle, and Add button */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center flex-1">
+          <MultiSelectCategoryFilter
+            categories={categories}
+            selectedCategories={selectedCategories}
+            label=""
+            onChange={onCategoryChange}
+          />
           <div className="space-x-1">
             {(['high', 'medium', 'low'] as const).map((priority) => (
               <Badge
@@ -83,12 +95,20 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
           />
         </div>
         <div className="flex gap-2">
-          <MultiSelectCategoryFilter
-            categories={categories}
-            selectedCategories={selectedCategories}
-            label=""
-            onChange={onCategoryChange}
-          />
+          <div className="w-48">
+            <Select
+              value={sortBy}
+              size="sm"
+              onChange={(e) => onSortChange(e.target.value as SortOption)}
+              options={[
+                { value: 'date-desc', label: 'Newest first' },
+                { value: 'date-asc', label: 'Oldest first' },
+                { value: 'alpha-asc', label: 'A to Z' },
+                { value: 'alpha-desc', label: 'Z to A' },
+              ]}
+              fullWidth
+            />
+          </div>
           <Button
             variant="primary"
             size="circle"
