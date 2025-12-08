@@ -110,7 +110,7 @@ export default function AIEnrichment({
 
       {error && (
         <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 p-3 dark:border-danger-800 dark:bg-danger-950">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-danger-600 dark:text-danger-400 mt-0.5" />
+          <AlertCircle className="h-4 w-4 shrink-0 text-danger-600 dark:text-danger-400 mt-0.5" />
           <p className="text-sm text-danger-700 dark:text-danger-300">
             {error}
           </p>
