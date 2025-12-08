@@ -49,6 +49,10 @@ Current user ID: ${context.user.id}
     // Create tools with user context
     const tools = createTools(context.user.id)
 
+    // Debug: Check what the tools object looks like
+    console.log('Tools keys:', Object.keys(tools))
+    console.log('addItem tool:', tools.addItem)
+
     // Create streaming response with tool calling
     const result = streamText({
       model: openai('gpt-4-turbo'),

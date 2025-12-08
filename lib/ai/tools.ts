@@ -11,6 +11,69 @@ import { getDb, items } from '@/lib/db'
 import { eq, and, desc } from 'drizzle-orm'
 import { findSimilarItems, findBestMatch } from '@/lib/utils/similarity'
 
+// Define Zod schemas for validation
+const addItemSchema = z.object({
+  title: z.string(),
+  categoryId: z.string(),
+  description: z.string().optional(),
+  location: z.string().optional(),
+  url: z.string().optional(),
+  targetDate: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  note: z.string().optional(),
+})
+
+const listItemsSchema = z.object({
+  categoryId: z.string().optional(),
+  status: z.enum(['todo', 'done']).optional(),
+  query: z.string().optional(),
+  limit: z.number().optional(),
+})
+
+const toggleItemSchema = z.object({
+  identifier: z.string(),
+  newStatus: z.enum(['todo', 'done']).optional(),
+})
+
+// Manually define JSON Schema for OpenAI (bypassing zodToJsonSchema compatibility issue)
+const addItemJsonSchema = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    categoryId: { type: 'string' },
+    description: { type: 'string' },
+    location: { type: 'string' },
+    url: { type: 'string' },
+    targetDate: { type: 'string' },
+    priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+    note: { type: 'string' },
+  },
+  required: ['title', 'categoryId'],
+  additionalProperties: false,
+}
+
+const listItemsJsonSchema = {
+  type: 'object',
+  properties: {
+    categoryId: { type: 'string' },
+    status: { type: 'string', enum: ['todo', 'done'] },
+    query: { type: 'string' },
+    limit: { type: 'number' },
+  },
+  required: [],
+  additionalProperties: false,
+}
+
+const toggleItemJsonSchema = {
+  type: 'object',
+  properties: {
+    identifier: { type: 'string' },
+    newStatus: { type: 'string', enum: ['todo', 'done'] },
+  },
+  required: ['identifier'],
+  additionalProperties: false,
+}
+
 /**
  * Factory function to create tools with user context
  */
@@ -18,16 +81,7 @@ export function createTools(userId: string) {
   return {
     addItem: {
       description: 'Add a new item to the user\'s wishlist. Extract relevant details from natural language like title, category, location, dates, priority, etc.',
-      parameters: z.object({
-        title: z.string().describe('The main title/name of the item'),
-        categoryId: z.string().describe('The category ID - choose from available categories based on context'),
-        description: z.string().optional().describe('Additional details about the item'),
-        location: z.string().optional().describe('Physical location (for restaurants, places to visit, etc.)'),
-        url: z.string().optional().describe('Related URL or website'),
-        targetDate: z.string().optional().describe('Target date in ISO format (YYYY-MM-DD)'),
-        priority: z.enum(['low', 'medium', 'high']).optional().describe('Priority level inferred from urgency indicators'),
-        note: z.string().optional().describe('Additional notes or context'),
-      }),
+      parameters: addItemJsonSchema,
       execute: async (args: any) => {
         const { title, categoryId, description, location, url, targetDate, priority, note } = args
         try {
@@ -92,12 +146,7 @@ export function createTools(userId: string) {
 
     listItems: {
       description: 'List items from the user\'s wishlist. Can filter by category, status, or search query.',
-      parameters: z.object({
-        categoryId: z.string().optional().describe('Filter by specific category ID'),
-        status: z.enum(['todo', 'done']).optional().describe('Filter by completion status (default: todo)'),
-        query: z.string().optional().describe('Text search query for filtering items'),
-        limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
-      }),
+      parameters: listItemsJsonSchema as any,
       execute: async (args: any) => {
         const { categoryId, status, query, limit } = args
         const effectiveStatus = status || 'todo'
@@ -174,10 +223,7 @@ export function createTools(userId: string) {
 
     toggleItem: {
       description: 'Toggle the completion status of a wishlist item. Uses fuzzy matching to find the item by title or description.',
-      parameters: z.object({
-        identifier: z.string().describe('Title, partial title, or description of the item to toggle'),
-        newStatus: z.enum(['todo', 'done']).optional().describe('Target status (if not specified, will toggle)'),
-      }),
+      parameters: toggleItemJsonSchema as any,
       execute: async (args: any) => {
         const { identifier, newStatus } = args
         try {

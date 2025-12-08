@@ -21,11 +21,12 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       <div
         className={`max-w-[80%] rounded-lg px-4 py-3 ${
           isUser
-            ? 'bg-primary-600 text-white'
+            ? 'text-white'
             : isError
             ? 'bg-red-100 text-red-900 dark:bg-red-900/20 dark:text-red-200'
-            : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+            : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100'
         }`}
+        style={isUser ? { backgroundColor: 'rgb(var(--accent))' } : undefined}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
 
