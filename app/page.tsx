@@ -31,6 +31,7 @@ import ItemDetailPanel from '@/components/ui/ItemDetailPanel';
 import ListItemSkeleton from '@/components/ui/ListItemSkeleton';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 import ItemFilters from '@/components/features/ItemFilters';
+import AIAssistantModal from '@/components/features/AIAssistantModal';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function HomePage() {
@@ -100,6 +101,9 @@ export default function HomePage() {
     useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // AI Assistant modal state
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   // Reset displayed items when filters or sort change
   useEffect(() => {
@@ -219,6 +223,7 @@ export default function HomePage() {
                 sortBy={sortBy}
                 onSortChange={setSortBy}
                 onAddClick={itemActions.openAddModal}
+                onAIAssistantClick={() => setIsAIModalOpen(true)}
               />
 
               {/* Items list or empty state */}
@@ -522,6 +527,13 @@ export default function HomePage() {
 
       {/* Keyboard shortcuts help */}
       <KeyboardShortcutsHelp />
+
+      {/* AI Assistant Modal */}
+      <AIAssistantModal
+        open={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onItemAdded={refresh}
+      />
     </AuthenticatedLayout>
   );
 }

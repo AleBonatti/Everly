@@ -7,6 +7,7 @@ import Toggle from '@/components/ui/Toggle';
 import MultiSelectCategoryFilter from '@/components/ui/MultiSelectCategoryFilter';
 import Badge from '@/components/ui/Badge';
 import Select from '@/components/ui/Select';
+import AIAssistantButton from '@/components/features/AIAssistantButton';
 import type { SortOption } from '@/lib/hooks/useItemFilters';
 
 export interface ItemFiltersProps {
@@ -20,6 +21,7 @@ export interface ItemFiltersProps {
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   onAddClick: () => void;
+  onAIAssistantClick?: () => void;
 }
 
 const ItemFilters: React.FC<ItemFiltersProps> = ({
@@ -33,6 +35,7 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
   sortBy,
   onSortChange,
   onAddClick,
+  onAIAssistantClick,
 }) => {
   const priorityIcons = {
     high: AlertCircle,
@@ -95,6 +98,9 @@ const ItemFilters: React.FC<ItemFiltersProps> = ({
           />
         </div>
         <div className="flex gap-2">
+          {onAIAssistantClick && (
+            <AIAssistantButton onClick={onAIAssistantClick} />
+          )}
           <div className="w-48">
             <Select
               value={sortBy}

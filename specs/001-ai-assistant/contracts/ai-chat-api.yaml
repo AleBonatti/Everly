@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  title: AI Chat API
+  description: Streaming conversational API for the AI Personal Assistant feature
+  version: 1.0.0
+  contact:
+    name: SpecToDo Development
+    url: https://github.com/yourusername/spectodo
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://your-production-domain.com/api
+    description: Production server
+
+paths:
+  /ai/chat:
+    post:
+      summary: Stream AI assistant conversation
+      description: |
+        Accepts a conversation history and returns a streaming response from the AI assistant.
+        The assistant may invoke tools (addItem, listItems, toggleItem) as part of its response.
+        Responses are streamed using Server-Sent Events (SSE).
+      operationId: streamAIChat
+      tags:
+        - AI Assistant
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              addItemRequest:
+                summary: User wants to add an item
+                value:
+                  messages:
+                    - role: user
+                      content: "I want to watch Dune: Part Two when it's on streaming"
+              listItemsRequest:
+                summary: User wants to see their list
+                value:
+                  messages:
+                    - role: user
+                      content: "What movies do I want to watch?"
+              toggleItemRequest:
+                summary: User wants to mark something complete
+                value:
+                  messages:
+                    - role: user
+                      content: "I finally ate at the Chinese restaurant, mark it done"
+      responses:
+        '200':
+          description: Streaming response from AI assistant
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/StreamEvent'
+              examples:
+                textDelta:
+                  summary: Text chunk from AI
+                  value:
+                    type: text-delta
+                    textDelta: "I'll add that to your watchlist!"
+                toolCall:
+                  summary: AI invokes a tool
+                  value:
+                    type: tool-call
+                    toolName: addItem
+                    toolCallId: call_abc123
+                    args:
+                      title: "Watch Dune: Part Two"
+                      categoryId: cat_watch
+                toolResult:
+                  summary: Tool execution result
+                  value:
+                    type: tool-result
+                    toolCallId: call_abc123
+                    result:
+                      success: true
+                      data:
+                        itemId: item_456
+                      message: "Added to your watchlist"
+                finish:
+                  summary: Stream completion
+                  value:
+                    type: finish
+                    finishReason: stop
+        '400':
+          description: Bad request (invalid input)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid message format"
+                code: "INVALID_REQUEST"
+        '401':
+          description: Unauthorized (no valid session)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
+                code: "UNAUTHORIZED"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Too many requests. Please slow down."
+                code: "RATE_LIMIT"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "An unexpected error occurred"
+                code: "INTERNAL_ERROR"
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Supabase session cookie
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          description: Conversation history
+          minItems: 1
+          maxItems: 50
+      example:
+        messages:
+          - role: user
+            content: "I want to watch Dune: Part Two"
+
+    Message:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+          description: The speaker of this message
+        content:
+          type: string
+          description: The text content of the message
+          minLength: 1
+          maxLength: 5000
+        toolInvocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolInvocation'
+          description: Tool calls made by the assistant (optional)
+      example:
+        role: user
+        content: "What restaurants do I want to try?"
+
+    ToolInvocation:
+      type: object
+      required:
+        - toolCallId
+        - toolName
+        - args
+      properties:
+        toolCallId:
+          type: string
+          description: Unique identifier for this tool call
+          example: call_xyz789
+        toolName:
+          type: string
+          enum: [addItem, listItems, toggleItem]
+          description: The name of the tool being invoked
+        args:
+          type: object
+          description: Arguments passed to the tool
+          additionalProperties: true
+        result:
+          $ref: '#/components/schemas/ToolResult'
+          description: Result of tool execution (populated after execution)
+
+    ToolResult:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+          description: Whether the tool execution succeeded
+        data:
+          type: object
+          description: Payload returned by the tool
+          additionalProperties: true
+          nullable: true
+        message:
+          type: string
+          description: Human-readable summary of the result
+        error:
+          type: string
+          description: Error message if execution failed
+          nullable: true
+      example:
+        success: true
+        data:
+          itemId: item_123
+        message: "Added to your wishlist"
+
+    StreamEvent:
+      oneOf:
+        - $ref: '#/components/schemas/TextDeltaEvent'
+        - $ref: '#/components/schemas/ToolCallEvent'
+        - $ref: '#/components/schemas/ToolResultEvent'
+        - $ref: '#/components/schemas/FinishEvent'
+        - $ref: '#/components/schemas/ErrorEvent'
+      discriminator:
+        propertyName: type
+        mapping:
+          text-delta: '#/components/schemas/TextDeltaEvent'
+          tool-call: '#/components/schemas/ToolCallEvent'
+          tool-result: '#/components/schemas/ToolResultEvent'
+          finish: '#/components/schemas/FinishEvent'
+          error: '#/components/schemas/ErrorEvent'
+
+    TextDeltaEvent:
+      type: object
+      required:
+        - type
+        - textDelta
+      properties:
+        type:
+          type: string
+          enum: [text-delta]
+        textDelta:
+          type: string
+          description: Incremental text chunk from the AI
+          example: "I'll add that"
+
+    ToolCallEvent:
+      type: object
+      required:
+        - type
+        - toolName
+        - toolCallId
+        - args
+      properties:
+        type:
+          type: string
+          enum: [tool-call]
+        toolName:
+          type: string
+          enum: [addItem, listItems, toggleItem]
+          description: The tool being called
+        toolCallId:
+          type: string
+          description: Unique identifier for this call
+          example: call_abc123
+        args:
+          type: object
+          description: Tool arguments
+          additionalProperties: true
+          example:
+            title: "Watch Dune: Part Two"
+            categoryId: cat_watch
+
+    ToolResultEvent:
+      type: object
+      required:
+        - type
+        - toolCallId
+        - result
+      properties:
+        type:
+          type: string
+          enum: [tool-result]
+        toolCallId:
+          type: string
+          description: Matches the tool call ID
+          example: call_abc123
+        result:
+          $ref: '#/components/schemas/ToolResult'
+
+    FinishEvent:
+      type: object
+      required:
+        - type
+        - finishReason
+      properties:
+        type:
+          type: string
+          enum: [finish]
+        finishReason:
+          type: string
+          enum: [stop, length, tool-calls, error]
+          description: Why the stream ended
+          example: stop
+
+    ErrorEvent:
+      type: object
+      required:
+        - type
+        - error
+      properties:
+        type:
+          type: string
+          enum: [error]
+        error:
+          type: string
+          description: Error message
+          example: "Failed to execute tool"
+
+    Error:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - INVALID_REQUEST
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+            - RATE_LIMIT
+            - INTERNAL_ERROR
+        details:
+          type: object
+          description: Additional error context
+          additionalProperties: true
+          nullable: true
+
+tags:
+  - name: AI Assistant
+    description: Conversational AI endpoints for natural language wishlist management
