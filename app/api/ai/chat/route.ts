@@ -6,13 +6,16 @@
  * Handles natural language interactions and tool execution
  */
 
-import { NextRequest } from 'next/server'
-import { streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
-import { requireAuth, handleAuthError } from '@/lib/auth/middleware'
-import { createTools } from '@/lib/ai/tools'
-import { SYSTEM_PROMPT } from '@/lib/ai/prompt'
-import { getAvailableCategories, formatCategoriesForPrompt } from '@/lib/ai/categories'
+import { NextRequest } from 'next/server';
+import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { requireAuth, handleAuthError } from '@/lib/auth/middleware';
+import { createTools } from '@/lib/ai/tools';
+import { SYSTEM_PROMPT } from '@/lib/ai/prompt';
+import {
+  getAvailableCategories,
+  formatCategoriesForPrompt,
+} from '@/lib/ai/categories';
 
 /**
  * POST /api/ai/chat
@@ -21,21 +24,21 @@ import { getAvailableCategories, formatCategoriesForPrompt } from '@/lib/ai/cate
 export async function POST(req: NextRequest) {
   try {
     // Verify authentication
-    const context = await requireAuth(req)
+    const context = await requireAuth(req);
 
     // Parse request body
-    const { messages } = await req.json()
+    const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: 'Invalid request: messages array required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     // Fetch available categories for the AI
-    const categories = await getAvailableCategories()
-    const categoriesText = formatCategoriesForPrompt(categories)
+    const categories = await getAvailableCategories();
+    const categoriesText = formatCategoriesForPrompt(categories);
 
     // Build enhanced system prompt with categories
     const enhancedPrompt = `${SYSTEM_PROMPT}
@@ -44,14 +47,14 @@ Available categories:
 ${categoriesText}
 
 Current user ID: ${context.user.id}
-`
+`;
 
     // Create tools with user context
-    const tools = createTools(context.user.id)
+    const tools = createTools(context.user.id);
 
     // Debug: Check what the tools object looks like
-    console.log('Tools keys:', Object.keys(tools))
-    console.log('addItem tool:', tools.addItem)
+    //console.log('Tools keys:', Object.keys(tools));
+    //console.log('addItem tool:', tools.addItem);
 
     // Create streaming response with tool calling
     const result = streamText({
@@ -59,10 +62,32 @@ Current user ID: ${context.user.id}
       messages,
       tools,
       system: enhancedPrompt,
-    })
+    });
 
-    // Return streaming response
-    return result.toTextStreamResponse()
+    // Stream full response including tool calls using fullStream
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const part of result.fullStream) {
+            // Send each part as JSON with newline delimiter
+            const json = JSON.stringify(part) + '\n';
+            controller.enqueue(encoder.encode(json));
+          }
+          controller.close();
+        } catch (error) {
+          console.error('Streaming error:', error);
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'application/x-ndjson',
+        'Transfer-Encoding': 'chunked',
+      },
+    });
   } catch (error) {
     // Handle auth errors
     if (
@@ -71,18 +96,18 @@ Current user ID: ${context.user.id}
         error.message.includes('Unauthorized') ||
         error.message.includes('Forbidden'))
     ) {
-      return handleAuthError(error)
+      return handleAuthError(error);
     }
 
     // Handle other errors
-    console.error('Error in AI chat endpoint:', error)
+    console.error('Error in AI chat endpoint:', error);
     return new Response(
       JSON.stringify({
         error: 'An unexpected error occurred. Please try again.',
         code: 'INTERNAL_ERROR',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+    );
   }
 }
 
@@ -98,5 +123,5 @@ export async function OPTIONS() {
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
-  })
+  });
 }

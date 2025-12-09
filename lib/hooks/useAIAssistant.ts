@@ -13,7 +13,7 @@ import type { UseAIAssistantReturn } from '@/types/ai';
  * Hook for managing AI assistant conversation
  * Provides state and methods for chat interaction
  */
-export function useAIAssistant(): UseAIAssistantReturn {
+export function useAIAssistant(onItemModified?: () => void): UseAIAssistantReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -71,23 +71,68 @@ export function useAIAssistant(): UseAIAssistantReturn {
         // Add empty assistant message
         setMessages((prev) => [...prev, assistantMessage]);
 
-        // Read the stream - toTextStreamResponse() sends plain text chunks
+        // Parse newline-delimited JSON stream from fullStream
+        let buffer = '';
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
 
-          // Add chunk directly to message content
-          if (chunk) {
-            assistantMessage.content += chunk;
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMessage.id
-                  ? { ...assistantMessage }
-                  : msg
-              )
-            );
+          // Keep last incomplete line in buffer
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+
+            try {
+              const part = JSON.parse(line);
+
+              // Handle different stream part types
+              if (part.type === 'text-delta') {
+                // Streaming text chunk
+                assistantMessage.content += part.text;
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessage.id
+                      ? { ...msg, content: assistantMessage.content }
+                      : msg
+                  )
+                );
+              } else if (part.type === 'tool-call') {
+                // Tool invocation
+                console.log('Tool call:', part.toolName, part.input);
+              } else if (part.type === 'tool-result') {
+                // Tool execution result
+                console.log('Tool result:', part.toolName, part.output);
+
+                // Add tool result message to the chat
+                if (part.output?.message) {
+                  assistantMessage.content += part.output.message;
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, content: assistantMessage.content }
+                        : msg
+                    )
+                  );
+                }
+
+                // Notify when items are modified
+                if (
+                  onItemModified &&
+                  (part.toolName === 'addItem' ||
+                    part.toolName === 'toggleItem') &&
+                  part.output?.success
+                ) {
+                  onItemModified();
+                }
+              }
+            } catch (e) {
+              console.error('Failed to parse stream part:', line, e);
+            }
           }
         }
       } catch (error) {
@@ -106,7 +151,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
         setIsStreaming(false);
       }
     },
-    [input, isStreaming, messages]
+    [input, isStreaming, messages, onItemModified]
   );
 
   const clearMessages = useCallback(() => {

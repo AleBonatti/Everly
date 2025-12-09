@@ -31,7 +31,7 @@ export default function AIAssistantModal({
     sendMessage,
     setInput,
     clearMessages,
-  } = useAIAssistant()
+  } = useAIAssistant(onItemAdded)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -59,11 +59,6 @@ export default function AIAssistantModal({
     e.preventDefault()
     if (!input.trim() || isStreaming) return
     sendMessage(e)
-
-    // Call onItemAdded callback after a short delay to allow for item creation
-    if (onItemAdded) {
-      setTimeout(onItemAdded, 1000)
-    }
   }
 
   return (
