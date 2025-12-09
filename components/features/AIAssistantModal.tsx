@@ -5,18 +5,18 @@
  * Modal interface for AI-powered conversational interaction
  */
 
-'use client'
+'use client';
 
-import React, { useRef, useEffect } from 'react'
-import Modal from '@/components/ui/Modal'
-import MessageBubble from '@/components/ui/MessageBubble'
-import { useAIAssistant } from '@/lib/hooks/useAIAssistant'
-import { Send, Loader2 } from 'lucide-react'
+import React, { useRef, useEffect } from 'react';
+import Modal from '@/components/ui/Modal';
+import MessageBubble from '@/components/ui/MessageBubble';
+import { useAIAssistant } from '@/lib/hooks/useAIAssistant';
+import { Send, Loader2 } from 'lucide-react';
 
 interface AIAssistantModalProps {
-  open: boolean
-  onClose: () => void
-  onItemAdded?: () => void
+  open: boolean;
+  onClose: () => void;
+  onItemAdded?: () => void;
 }
 
 export default function AIAssistantModal({
@@ -24,42 +24,36 @@ export default function AIAssistantModal({
   onClose,
   onItemAdded,
 }: AIAssistantModalProps) {
-  const {
-    messages,
-    input,
-    isStreaming,
-    sendMessage,
-    setInput,
-    clearMessages,
-  } = useAIAssistant(onItemAdded)
+  const { messages, input, isStreaming, sendMessage, setInput, clearMessages } =
+    useAIAssistant(onItemAdded);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Focus input when modal opens
   useEffect(() => {
     if (open) {
       setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
+        inputRef.current?.focus();
+      }, 100);
     }
-  }, [open])
+  }, [open]);
 
   const handleClose = () => {
-    clearMessages()
-    onClose()
-  }
+    clearMessages();
+    onClose();
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isStreaming) return
-    sendMessage(e)
-  }
+    e.preventDefault();
+    if (!input.trim() || isStreaming) return;
+    sendMessage(e);
+  };
 
   return (
     <Modal open={open} onClose={handleClose} title="AI Assistant" size="lg">
@@ -71,7 +65,8 @@ export default function AIAssistantModal({
               <div className="space-y-2">
                 <p className="text-lg font-medium">How can I help you today?</p>
                 <p className="text-sm">
-                  Try saying: "I want to watch Dune Part 2" or "What movies do I have saved?"
+                  Try saying: &quot;I want to watch Dune Part 2&quot; or
+                  &quot;What movies do I have saved?&quot;
                 </p>
               </div>
             </div>
@@ -123,5 +118,5 @@ export default function AIAssistantModal({
         </form>
       </div>
     </Modal>
-  )
+  );
 }
