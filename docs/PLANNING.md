@@ -81,7 +81,7 @@ Notes:
 | POST | `/auth/logout` | clears session |
 | GET | `/categories` | current user's categories |
 | POST | `/categories` | create |
-| DELETE | `/categories/:id` | delete (only if no items reference it, or cascade — decide later) |
+| DELETE | `/categories/:id` | delete — blocked (409) if any item still references this category |
 | GET | `/items?category=&q=` | list with filters |
 | POST | `/items` | create |
 | PATCH | `/items/:id` | update |
@@ -128,7 +128,7 @@ You'll end up managing secrets in **four** places — this multiplicity is itsel
 | 3 | Categories + Items CRUD API with filters | Fastify routing, Zod validation, Postgres queries |
 | 4 | Vite + React scaffold, Tailwind v4, routing, API client, TanStack Query | Modern React app structure |
 | 5 | Auth pages, protected routes, item grid, filters UI, create/edit forms | React Hook Form + Zod, real UI state |
-| 6 | Image upload (Supabase Storage), geolocation capture | File upload UX, browser Geolocation API |
+| 6 | Image upload + server-side resize/compress (Supabase Storage), geolocation capture | File upload UX, image processing (`sharp`), browser Geolocation API |
 | 7 | Tests: Vitest (API), React Testing Library (web) | Testing real-world apps |
 | 8 | GitHub Actions CI, Vercel deploy, Render deploy, secrets wiring | **CI/CD end-to-end** |
 | 9 (stretch) | Postgres full-text search, rate limiting, structured logging, gated CD, **email verification flow** (schema already supports it) | Polish for CV bullet points |
@@ -137,9 +137,9 @@ We'll go phase by phase — I give you the structure/checklist for a phase, you 
 
 ## 11. Other risks to keep in mind
 
-- **Image upload validation**: enforce file type/size limits both client- and server-side before hitting Storage.
-- **Category deletion**: decide now — cascade-delete items, or block deletion while items reference it? (Recommend: block, safer default, easy to relax later.)
-- **Supabase free tier** pauses inactive projects after a period of inactivity — fine for a portfolio project, just don't be surprised by a cold-start delay if you demo it after a long pause.
+- **Image upload**: validate both file type and size on the client (fast UX feedback) *and* re-validate on the server (client checks are trivially bypassable, never trust them alone). Beyond validation, uploaded images also need to be **resized** — both quality (re-compressed) and width/height (capped to a max dimension) — before they're written to Supabase Storage, to keep storage/bandwidth costs down and the grid view fast. Recommended approach: do the resizing server-side with `sharp` (a Node image-processing library with native bindings) rather than client-side — this is also a nice concrete payoff from choosing Render over serverless functions, since native-binding libraries like `sharp` run far more smoothly in a persistent container than in ephemeral serverless environments. Lands in Phase 6.
+- **Category deletion**: confirmed — block deletion (return a 409) while any item still references that category, rather than cascading. See §6 for the corresponding API behavior.
+- **Supabase free tier** pauses inactive projects after a period of inactivity. Acknowledged and accepted — this is a test/portfolio project, not aiming for always-on availability, so the occasional cold-start delay on demo is a fine tradeoff.
 
 ## 12. Next step
 
