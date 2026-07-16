@@ -8,36 +8,36 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/coverage']),
+    globalIgnores(['**/dist', '**/coverage']),
 
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended],
-    languageOptions: {
-      parserOptions: {
-        tsconfigRootDir: import.meta.dirname,
-      },
+    {
+        files: ['**/*.{ts,tsx}'],
+        extends: [js.configs.recommended, tseslint.configs.recommended],
+        languageOptions: {
+            parserOptions: {
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
     },
-  },
 
-  {
-    files: ['apps/api/**/*.ts'],
-    languageOptions: {
-      globals: globals.node,
+    {
+        files: ['apps/api/**/*.ts'],
+        languageOptions: {
+            globals: globals.node,
+        },
     },
-  },
 
-  {
-    files: ['apps/web/**/*.{ts,tsx}'],
-    extends: [
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-      jsxA11y.flatConfigs.recommended,
-    ],
-    languageOptions: {
-      globals: globals.browser,
+    {
+        files: ['apps/web/**/*.{ts,tsx}'],
+        extends: [
+            reactHooks.configs.flat.recommended,
+            reactRefresh.configs.vite,
+            jsxA11y.flatConfigs.recommended,
+        ],
+        languageOptions: {
+            globals: globals.browser,
+        },
     },
-  },
 
-  eslintConfigPrettier,
+    eslintConfigPrettier,
 ]);
