@@ -1,0 +1,9 @@
+I would like to create a simple web app called Everly (subtitle "A list of things worth doing").
+This is basically a todo list on steroids, where the user can create a bucket list of things they want to exceperience in the future.
+For example:
+- someone told you about a fancy new restaurant? Add it to the list to rember about it.
+- You had a good idea about a vacantion or a place you want to visit? Add it to the list.
+- You just found out about a concert that will happen in 6 months? Add it to the list!
+
+Users can group items by categories (categories will have a dedicated handling area).
+Each item will have a title, a description, a picture (with a default placeholder based on category), an "importance" 1 to 5, and can be geolocated.A user must be logged it, so the first views to handle are login, registration, password reset ecc.Once logged users will see their current list, with filters, ora an invite to add their first item when the list is empty. Show app logo top left, and the item list in a grid style display.Think of a simple but nice design. I prefer dark colors. Some rules: top bar with logo on the left, and user avatar and name on right. When clicked, open a menù with system settings, users settings and logout link.Then filters bar.Then list content. Single item editing wil happen in a modal, now view change.Last thing, footer with footer basic stuff.
