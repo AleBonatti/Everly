@@ -14,3 +14,11 @@ export const loginInputSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginInputSchema>;
+
+export const authUserSchema = z.object({
+    id: z.uuid(),
+    name: z.string(),
+    email: z.email(),
+});
+
+export type AuthUser = z.infer<typeof authUserSchema>;

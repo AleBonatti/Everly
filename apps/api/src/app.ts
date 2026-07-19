@@ -9,6 +9,7 @@ import {
     type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { db } from './db/index.js';
+import { authRoutes } from './routes/auth.js';
 
 export function buildApp() {
     const app = Fastify({
@@ -32,6 +33,8 @@ export function buildApp() {
         origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
         credentials: true,
     });
+
+    app.register(authRoutes, { prefix: '/auth' });
 
     app.get('/health', async (_request, reply) => {
         try {
