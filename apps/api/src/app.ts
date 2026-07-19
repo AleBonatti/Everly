@@ -9,6 +9,7 @@ import {
     type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { db } from './db/index.js';
+import authenticatePlugin from './plugins/authenticate.js';
 import { authRoutes } from './routes/auth.js';
 
 export function buildApp() {
@@ -34,6 +35,7 @@ export function buildApp() {
         credentials: true,
     });
 
+    app.register(authenticatePlugin);
     app.register(authRoutes, { prefix: '/auth' });
 
     app.get('/health', async (_request, reply) => {

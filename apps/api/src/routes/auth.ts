@@ -17,7 +17,7 @@ function isProduction() {
 }
 
 async function issueSession(reply: import('fastify').FastifyReply, userId: string) {
-    const token = await reply.jwtSign({ sub: userId });
+    const token = await reply.jwtSign({ sub: userId }, { expiresIn: '7d' });
     reply.setCookie('token', token, {
         httpOnly: true,
         secure: isProduction(),
@@ -97,6 +97,25 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             }
 
             await issueSession(reply, user.id);
+
+            return reply.send({ id: user.id, name: user.name, email: user.email });
+        },
+    );
+
+    app.get(
+        '/me',
+        {
+            preHandler: [app.authenticate],
+            schema: { response: { 200: authUserSchema, 401: errorResponseSchema } },
+        },
+        async (request, reply) => {
+            const user = await db.query.users.findFirst({
+                where: eq(users.id, request.user.sub),
+            });
+
+            if (!user) {
+                return reply.status(401).send({ message: 'Unauthorized' });
+            }
 
             return reply.send({ id: user.id, name: user.name, email: user.email });
         },
