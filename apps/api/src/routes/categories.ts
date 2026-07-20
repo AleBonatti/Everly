@@ -11,7 +11,15 @@ import { db } from '../db/index.js';
 import { categories } from '../db/schema.js';
 
 function isForeignKeyViolation(err: unknown): boolean {
-    return typeof err === 'object' && err !== null && 'code' in err && err.code === '23503';
+    return (
+        typeof err === 'object' &&
+        err !== null &&
+        'cause' in err &&
+        typeof err.cause === 'object' &&
+        err.cause !== null &&
+        'code' in err.cause &&
+        err.cause.code === '23503'
+    );
 }
 
 export const categoriesRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -100,6 +108,7 @@ export const categoriesRoutes: FastifyPluginAsyncZod = async (app) => {
 
                 return reply.send({ message: 'Category deleted' });
             } catch (err) {
+                console.log('caught error:', err);
                 if (isForeignKeyViolation(err)) {
                     return reply
                         .status(409)
