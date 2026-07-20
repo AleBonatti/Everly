@@ -11,6 +11,8 @@ import {
 import { db } from './db/index.js';
 import authenticatePlugin from './plugins/authenticate.js';
 import { authRoutes } from './routes/auth.js';
+import { categoriesRoutes } from './routes/categories.js';
+import { itemsRoutes } from './routes/items.js';
 
 export function buildApp() {
     const app = Fastify({
@@ -37,6 +39,8 @@ export function buildApp() {
 
     app.register(authenticatePlugin);
     app.register(authRoutes, { prefix: '/auth' });
+    app.register(categoriesRoutes, { prefix: '/categories' });
+    app.register(itemsRoutes, { prefix: '/items' });
 
     app.get('/health', async (_request, reply) => {
         try {
