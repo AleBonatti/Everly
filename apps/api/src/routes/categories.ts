@@ -108,7 +108,6 @@ export const categoriesRoutes: FastifyPluginAsyncZod = async (app) => {
 
                 return reply.send({ message: 'Category deleted' });
             } catch (err) {
-                console.log('caught error:', err);
                 if (isForeignKeyViolation(err)) {
                     return reply
                         .status(409)
