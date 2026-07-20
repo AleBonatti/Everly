@@ -10,7 +10,11 @@ import {
 import { db } from '../db/index.js';
 import { users, categories } from '../db/schema.js';
 
-const DEFAULT_CATEGORIES = ['Food', 'Travel', 'Free time'];
+const DEFAULT_CATEGORIES = [
+    { name: 'Food', color: '#f97316' },
+    { name: 'Travel', color: '#3b82f6' },
+    { name: 'Free time', color: '#22c55e' },
+];
 
 function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -60,10 +64,10 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 }
 
                 await tx.insert(categories).values(
-                    DEFAULT_CATEGORIES.map((categoryName) => ({
+                    DEFAULT_CATEGORIES.map((category) => ({
                         userId: newUser.id,
-                        name: categoryName,
                         isDefault: true,
+                        ...category,
                     })),
                 );
 
