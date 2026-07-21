@@ -1,12 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
-import {
-    registerInputSchema,
-    loginInputSchema,
-    authUserSchema,
-    errorResponseSchema,
-} from '@everly/shared';
+import { registerInputSchema, loginInputSchema, authUserSchema, errorResponseSchema } from '@everly/shared';
 import { db } from '../db/index.js';
 import { users, categories } from '../db/schema.js';
 
@@ -54,10 +49,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             const passwordHash = await argon2.hash(password);
 
             const user = await db.transaction(async (tx) => {
-                const [newUser] = await tx
-                    .insert(users)
-                    .values({ name, email, passwordHash })
-                    .returning();
+                const [newUser] = await tx.insert(users).values({ name, email, passwordHash }).returning();
 
                 if (!newUser) {
                     throw new Error('Failed to create user');

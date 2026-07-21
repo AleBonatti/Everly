@@ -3,11 +3,7 @@ import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors';
 import { sql } from 'drizzle-orm';
-import {
-    validatorCompiler,
-    serializerCompiler,
-    type ZodTypeProvider,
-} from 'fastify-type-provider-zod';
+import { validatorCompiler, serializerCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { db } from './db/index.js';
 import authenticatePlugin from './plugins/authenticate.js';
 import { authRoutes } from './routes/auth.js';

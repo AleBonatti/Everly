@@ -29,11 +29,7 @@ export default defineConfig([
 
     {
         files: ['apps/web/**/*.{ts,tsx}'],
-        extends: [
-            reactHooks.configs.flat.recommended,
-            reactRefresh.configs.vite,
-            jsxA11y.flatConfigs.recommended,
-        ],
+        extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite, jsxA11y.flatConfigs.recommended],
         languageOptions: {
             globals: globals.browser,
         },
