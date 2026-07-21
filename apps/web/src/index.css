@@ -22,6 +22,8 @@
 
     --color-success: oklch(0.78 0.13 150);
     --color-success-bg: oklch(0.28 0.05 150);
+
+    --color-avatar: oklch(0.55 0.1 85);
 }
 
 body {

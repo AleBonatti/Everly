@@ -16,7 +16,7 @@ export async function request<T>(path: string, schema: ZodType<T>, init?: Reques
         ...init,
         credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
+            ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
             ...init?.headers,
         },
     });
