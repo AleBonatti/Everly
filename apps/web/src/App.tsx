@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
@@ -13,8 +14,11 @@ export function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/" element={<ItemsPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
+
+            <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<ItemsPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+            </Route>
         </Routes>
     );
 }

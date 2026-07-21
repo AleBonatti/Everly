@@ -7,3 +7,7 @@ export function login(input: LoginInput) {
         body: JSON.stringify(input),
     });
 }
+
+export function getMe() {
+    return request('/auth/me', authUserSchema);
+}
