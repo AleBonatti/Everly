@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginInputSchema, type LoginInput } from '@everly/shared';
 import { login } from '../lib/api/auth';
 import { ApiError } from '../lib/api-client';
+import { withDelay } from '../lib/with-delay';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 
@@ -22,10 +23,7 @@ export function LoginPage() {
     } = useForm<LoginInput>({ resolver: zodResolver(loginInputSchema) });
 
     const mutation = useMutation({
-        mutationFn: async (data: LoginInput) => {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            return login(data);
-        },
+        mutationFn: withDelay(login),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
             navigate('/');
@@ -47,7 +45,7 @@ export function LoginPage() {
                 <TextField label="Email" type="email" placeholder="you@example.com" {...register('email')} error={errors.email?.message} />
                 <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
-                        <label htmlFor="forgot" className="text-xs font-semibold text-muted-foreground">
+                        <label htmlFor="{inputId}" className="text-xs font-semibold text-muted-foreground">
                             Password
                         </label>
                         <Link id="forgot" to="/forgot-password" className="text-xs text-accent">

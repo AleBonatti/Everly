@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { registerInputSchema } from '@everly/shared';
 import { register as registerUser } from '../lib/api/auth';
 import { ApiError } from '../lib/api-client';
+import { withDelay } from '../lib/with-delay';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 
@@ -30,10 +31,7 @@ export function RegisterPage() {
     } = useForm<RegisterFormInput>({ resolver: zodResolver(registerFormSchema) });
 
     const mutation = useMutation({
-        mutationFn: async (data: RegisterFormInput) => {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            return registerUser({ name: data.name, email: data.email, password: data.password });
-        },
+        mutationFn: withDelay(registerUser),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
             navigate('/');

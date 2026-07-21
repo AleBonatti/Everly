@@ -31,6 +31,7 @@ export function buildApp() {
     app.register(cors, {
         origin: process.env.CORS_ORIGIN ?? 'http://localhost:5174',
         credentials: true,
+        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     });
 
     app.register(authenticatePlugin);
