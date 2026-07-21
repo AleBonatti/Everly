@@ -1,13 +1,7 @@
 import { z } from 'zod';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { and, eq, ilike, or } from 'drizzle-orm';
-import {
-    createItemInputSchema,
-    updateItemInputSchema,
-    itemsQuerySchema,
-    itemSchema,
-    errorResponseSchema,
-} from '@everly/shared';
+import { createItemInputSchema, updateItemInputSchema, itemsQuerySchema, itemSchema, errorResponseSchema } from '@everly/shared';
 import { db } from '../db/index.js';
 import { items, categories } from '../db/schema.js';
 
@@ -22,26 +16,20 @@ function serializeItem(item: typeof items.$inferSelect) {
 export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
     app.addHook('preHandler', app.authenticate);
 
-    app.get(
-        '/',
-        { schema: { querystring: itemsQuerySchema, response: { 200: z.array(itemSchema) } } },
-        async (request, reply) => {
-            const { category, q, archived } = request.query;
+    app.get('/', { schema: { querystring: itemsQuerySchema, response: { 200: z.array(itemSchema) } } }, async (request, reply) => {
+        const { category, q, archived } = request.query;
 
-            const whereConditions = and(
-                eq(items.userId, request.user.sub),
-                eq(items.isArchived, archived),
-                category ? eq(items.categoryId, category) : undefined,
-                q
-                    ? or(ilike(items.title, `%${q}%`), ilike(items.description, `%${q}%`))
-                    : undefined,
-            );
+        const whereConditions = and(
+            eq(items.userId, request.user.sub),
+            eq(items.isArchived, archived),
+            category ? eq(items.categoryId, category) : undefined,
+            q ? or(ilike(items.title, `%${q}%`), ilike(items.description, `%${q}%`)) : undefined,
+        );
 
-            const userItems = await db.query.items.findMany({ where: whereConditions });
+        const userItems = await db.query.items.findMany({ where: whereConditions });
 
-            return reply.send(userItems.map(serializeItem));
-        },
-    );
+        return reply.send(userItems.map(serializeItem));
+    });
 
     app.post(
         '/',
@@ -53,10 +41,7 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
         },
         async (request, reply) => {
             const category = await db.query.categories.findFirst({
-                where: and(
-                    eq(categories.id, request.body.categoryId),
-                    eq(categories.userId, request.user.sub),
-                ),
+                where: and(eq(categories.id, request.body.categoryId), eq(categories.userId, request.user.sub)),
             });
 
             if (!category) {
@@ -90,10 +75,7 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
 
             if (request.body.categoryId) {
                 const category = await db.query.categories.findFirst({
-                    where: and(
-                        eq(categories.id, request.body.categoryId),
-                        eq(categories.userId, request.user.sub),
-                    ),
+                    where: and(eq(categories.id, request.body.categoryId), eq(categories.userId, request.user.sub)),
                 });
 
                 if (!category) {

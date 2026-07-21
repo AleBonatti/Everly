@@ -75,20 +75,20 @@ Notes:
 
 ## 6. API surface (first pass)
 
-| Method | Path                  | Notes                                                             |
-| ------ | --------------------- | ----------------------------------------------------------------- |
-| POST   | `/auth/register`      | name, email, password → creates user + 3 default categories       |
-| POST   | `/auth/login`         | email, password → issues JWT                                      |
-| POST   | `/auth/logout`        | clears session                                                    |
-| GET    | `/categories`         | current user's categories                                         |
-| POST   | `/categories`         | create                                                            |
-| PATCH  | `/categories/:id`     | rename / recolor                                                  |
-| DELETE | `/categories/:id`     | delete — blocked (409) if any item still references this category |
-| GET    | `/items?category=&q=&archived=` | list with filters (`archived` defaults to `false`)       |
-| POST   | `/items`              | create                                                            |
-| PATCH  | `/items/:id`          | update                                                            |
-| DELETE | `/items/:id`          | delete                                                            |
-| POST   | `/items/:id/image`    | upload picture (Supabase Storage)                                 |
+| Method | Path                            | Notes                                                             |
+| ------ | ------------------------------- | ----------------------------------------------------------------- |
+| POST   | `/auth/register`                | name, email, password → creates user + 3 default categories       |
+| POST   | `/auth/login`                   | email, password → issues JWT                                      |
+| POST   | `/auth/logout`                  | clears session                                                    |
+| GET    | `/categories`                   | current user's categories                                         |
+| POST   | `/categories`                   | create                                                            |
+| PATCH  | `/categories/:id`               | rename / recolor                                                  |
+| DELETE | `/categories/:id`               | delete — blocked (409) if any item still references this category |
+| GET    | `/items?category=&q=&archived=` | list with filters (`archived` defaults to `false`)                |
+| POST   | `/items`                        | create                                                            |
+| PATCH  | `/items/:id`                    | update                                                            |
+| DELETE | `/items/:id`                    | delete                                                            |
+| POST   | `/items/:id/image`              | upload picture (Supabase Storage)                                 |
 
 ## 7. Open design flaw to resolve before Auth phase
 
