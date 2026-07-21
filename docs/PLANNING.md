@@ -62,10 +62,10 @@ Why a monorepo: it's the most common real-world pattern for "one team owns front
 `id, name, email (unique), password_hash, email_verified (bool, default false), created_at`
 
 **categories**
-`id, user_id (FK), name, is_default (bool), created_at`
+`id, user_id (FK), name, color (hex, from a hardcoded palette — see §13), is_default (bool), created_at`
 
 **items**
-`id, user_id (FK), category_id (FK), title, description, image_url (nullable), latitude (nullable), longitude (nullable), location_label (nullable), created_at, updated_at`
+`id, user_id (FK), category_id (FK), title, description, image_url (nullable), latitude (nullable), longitude (nullable), location_label (nullable), importance (int 1-5, default 3), is_archived (bool, default false), created_at, updated_at`
 
 Notes:
 
@@ -82,8 +82,9 @@ Notes:
 | POST   | `/auth/logout`        | clears session                                                    |
 | GET    | `/categories`         | current user's categories                                         |
 | POST   | `/categories`         | create                                                            |
+| PATCH  | `/categories/:id`     | rename / recolor                                                  |
 | DELETE | `/categories/:id`     | delete — blocked (409) if any item still references this category |
-| GET    | `/items?category=&q=` | list with filters                                                 |
+| GET    | `/items?category=&q=&archived=` | list with filters (`archived` defaults to `false`)       |
 | POST   | `/items`              | create                                                            |
 | PATCH  | `/items/:id`          | update                                                            |
 | DELETE | `/items/:id`          | delete                                                            |
@@ -145,6 +146,16 @@ We'll go phase by phase — I give you the structure/checklist for a phase, you 
 - **Category deletion**: confirmed — block deletion (return a 409) while any item still references that category, rather than cascading. See §6 for the corresponding API behavior.
 - **Supabase free tier** pauses inactive projects after a period of inactivity. Acknowledged and accepted — this is a test/portfolio project, not aiming for always-on availability, so the occasional cold-start delay on demo is a fine tradeoff.
 
-## 12. Next step
+## 12. Frontend design reference
+
+Design mockups reviewed on 2026-07-20, living at `../Everly bucket list app/` (one level above the repo root): `Everly.dc.html` (item grid, item modal, categories view/modal) and `Everly Auth.dc.html` (login/register/forgot/reset). These are interactive HTML/JS prototypes built with a third-party tool, not React code to copy — but they're the source of truth for spacing, colors, copy, and interaction states once Phase 4/5 build the real components.
+
+- **Visual system**: dark theme, OKLCH color space throughout, near-black background with a warm amber/gold accent, 'Space Grotesk' Google Font, 8–14px border-radius convention.
+- **Category colors**: the mockup generates tag/swatch colors dynamically from a hue number via `oklch(L C H)`. We're keeping the already-built hardcoded hex palette (`CATEGORY_COLORS` in `packages/shared`) instead, since it matches the original brief more closely (a fixed, validatable set of options) — the specific hex values were chosen to be visually close to the mockup's hues, not identical.
+- **Password reset**: the design includes a full forgot/reset-password flow, but its own placeholder copy ("Prototype: continue to reset form") signals even the design treats it as non-functional. Building it as UI-only in Phase 5 — real email-based reset is deferred to the Phase 9 stretch bucket alongside email verification, since both need the same not-yet-chosen email-provider infrastructure.
+- **Default categories**: kept at 3 (Food/Travel/Free time) per the original brief, despite the mockup's sample data showing 4 (it also includes "Events") — treated as prototype flavor, not a spec change.
+- **New fields added to `items` as a direct result of reviewing this design** (see §5): `importance` (1–5, used for sorting and shown as a dot-rating) and `is_archived` (a soft-hide, separate from the existing hard-delete endpoint).
+
+## 13. Next step
 
 If this looks right, next I'll walk you through **Phase 0** (repo scaffold + tooling) as a concrete checklist — no code written for you, just what files/configs to create and why.

@@ -1,4 +1,12 @@
-import { pgTable, uuid, text, boolean, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
+import {
+    pgTable,
+    uuid,
+    text,
+    boolean,
+    timestamp,
+    doublePrecision,
+    integer,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -34,6 +42,8 @@ export const items = pgTable('items', {
     latitude: doublePrecision('latitude'),
     longitude: doublePrecision('longitude'),
     locationLabel: text('location_label'),
+    importance: integer('importance').notNull().default(3),
+    isArchived: boolean('is_archived').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

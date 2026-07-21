@@ -15,6 +15,13 @@
       "when": 1784546333938,
       "tag": "0001_fancy_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784564477314,
+      "tag": "0002_soft_wiccan",
+      "breakpoints": true
     }
   ]
 }

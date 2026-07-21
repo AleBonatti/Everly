@@ -26,10 +26,11 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
         '/',
         { schema: { querystring: itemsQuerySchema, response: { 200: z.array(itemSchema) } } },
         async (request, reply) => {
-            const { category, q } = request.query;
+            const { category, q, archived } = request.query;
 
             const whereConditions = and(
                 eq(items.userId, request.user.sub),
+                eq(items.isArchived, archived),
                 category ? eq(items.categoryId, category) : undefined,
                 q
                     ? or(ilike(items.title, `%${q}%`), ilike(items.description, `%${q}%`))
@@ -79,7 +80,7 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
         '/:id',
         {
             schema: {
-                params: z.object({ id: z.string().uuid() }),
+                params: z.object({ id: z.uuid() }),
                 body: updateItemInputSchema,
                 response: { 200: itemSchema, 404: errorResponseSchema },
             },
@@ -118,7 +119,7 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
         '/:id',
         {
             schema: {
-                params: z.object({ id: z.string().uuid() }),
+                params: z.object({ id: z.uuid() }),
                 response: { 200: errorResponseSchema, 404: errorResponseSchema },
             },
         },
