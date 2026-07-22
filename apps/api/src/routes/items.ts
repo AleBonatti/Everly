@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { and, eq, ilike, or } from 'drizzle-orm';
-import { createItemInputSchema, updateItemInputSchema, itemsQuerySchema, itemSchema, errorResponseSchema } from '@everly/shared';
+import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { createItemInputSchema, updateItemInputSchema, itemsQuerySchema, paginatedItemsSchema, itemSchema, errorResponseSchema } from '@everly/shared';
 import { db } from '../db/index.js';
 import { items, categories } from '../db/schema.js';
 
@@ -16,19 +16,38 @@ function serializeItem(item: typeof items.$inferSelect) {
 export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
     app.addHook('preHandler', app.authenticate);
 
-    app.get('/', { schema: { querystring: itemsQuerySchema, response: { 200: z.array(itemSchema) } } }, async (request, reply) => {
-        const { category, q, archived } = request.query;
+    app.get('/', { schema: { querystring: itemsQuerySchema, response: { 200: paginatedItemsSchema } } }, async (request, reply) => {
+        const { category, q, archived, sort, page, pageSize } = request.query;
 
         const whereConditions = and(
             eq(items.userId, request.user.sub),
             eq(items.isArchived, archived),
-            category ? eq(items.categoryId, category) : undefined,
+            category ? inArray(items.categoryId, category) : undefined,
             q ? or(ilike(items.title, `%${q}%`), ilike(items.description, `%${q}%`)) : undefined,
         );
 
-        const userItems = await db.query.items.findMany({ where: whereConditions });
+        const orderBy = sort === 'importance' ? desc(items.importance) : desc(items.createdAt);
 
-        return reply.send(userItems.map(serializeItem));
+        const [rows, totalResult] = await Promise.all([
+            db
+                .select()
+                .from(items)
+                .where(whereConditions)
+                .orderBy(orderBy)
+                .limit(pageSize)
+                .offset((page - 1) * pageSize),
+            db
+                .select({ count: sql<number>`count(*)`.mapWith(Number) })
+                .from(items)
+                .where(whereConditions),
+        ]);
+
+        return reply.send({
+            items: rows.map(serializeItem),
+            total: totalResult[0]?.count ?? 0,
+            page,
+            pageSize,
+        });
     });
 
     app.post(
