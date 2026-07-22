@@ -18,12 +18,18 @@ export const updateItemInputSchema = createItemInputSchema.partial().extend({
 export type UpdateItemInput = z.infer<typeof updateItemInputSchema>;
 
 export const itemsQuerySchema = z.object({
-    category: z.uuid().optional(),
+    category: z
+        .string()
+        .optional()
+        .transform((value) => (value ? value.split(',') : undefined)),
     q: z.string().optional(),
     archived: z
         .enum(['true', 'false'])
         .default('false')
         .transform((v) => v === 'true'),
+    sort: z.enum(['newest', 'importance']).default('newest'),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(12),
 });
 export type ItemsQuery = z.infer<typeof itemsQuerySchema>;
 
@@ -42,3 +48,11 @@ export const itemSchema = z.object({
     updatedAt: z.string(),
 });
 export type Item = z.infer<typeof itemSchema>;
+
+export const paginatedItemsSchema = z.object({
+    items: z.array(itemSchema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+});
+export type PaginatedItems = z.infer<typeof paginatedItemsSchema>;
