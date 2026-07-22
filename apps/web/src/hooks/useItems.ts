@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createItem, deleteItem, getItems, updateItem, type ItemsFilters } from '../lib/api/items';
+import { createItem, deleteItem, getItems, updateItem, uploadItemImage, type ItemsFilters } from '../lib/api/items';
 import { withDelay } from '../lib/with-delay';
 import type { CreateItemInput, UpdateItemInput } from '@everly/shared';
 
@@ -22,6 +22,14 @@ export function useUpdateItem() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: withDelay(({ id, input }: { id: string; input: UpdateItemInput }) => updateItem(id, input)),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    });
+}
+
+export function useUploadItemImage() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, file }: { id: string; file: File }) => uploadItemImage(id, file),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
     });
 }

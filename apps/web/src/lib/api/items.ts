@@ -31,6 +31,16 @@ export function updateItem(id: string, input: UpdateItemInput) {
     return request(`/items/${id}`, itemSchema, { method: 'PATCH', body: JSON.stringify(input) });
 }
 
+export function uploadItemImage(id: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return request(`/items/${id}/image`, itemSchema, {
+        method: 'POST',
+        body: formData,
+    });
+}
+
 export function deleteItem(id: string) {
     return request(`/items/${id}`, errorResponseSchema, { method: 'DELETE' });
 }

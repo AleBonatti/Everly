@@ -4,6 +4,7 @@ import jwt from '@fastify/jwt';
 import cors from '@fastify/cors';
 import { sql } from 'drizzle-orm';
 import { validatorCompiler, serializerCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
+import multipart from '@fastify/multipart';
 import { db } from './db/index.js';
 import authenticatePlugin from './plugins/authenticate.js';
 import { authRoutes } from './routes/auth.js';
@@ -29,9 +30,13 @@ export function buildApp() {
     });
 
     app.register(cors, {
-        origin: process.env.CORS_ORIGIN ?? 'http://localhost:5174',
+        origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
         credentials: true,
         methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    });
+
+    app.register(multipart, {
+        limits: { fileSize: 5 * 1024 * 1024 },
     });
 
     app.register(authenticatePlugin);

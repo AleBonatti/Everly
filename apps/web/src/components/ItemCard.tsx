@@ -15,11 +15,16 @@ export function ItemCard({ item, category, onEdit, onArchiveToggle }: ItemCardPr
             <button
                 type="button"
                 onClick={onEdit}
-                className="relative aspect-[4/3] flex items-center justify-center cursor-pointer"
-                style={{
-                    backgroundImage: `repeating-linear-gradient(135deg, ${color}33 0px, ${color}33 14px, ${color}4d 14px, ${color}4d 28px)`,
-                }}
+                className="relative aspect-[4/3] flex items-center justify-center cursor-pointer overflow-hidden"
+                style={
+                    item.imageUrl
+                        ? undefined
+                        : {
+                              backgroundImage: `repeating-linear-gradient(135deg, ${color}33 0px, ${color}33 14px, ${color}4d 14px, ${color}4d 28px)`,
+                          }
+                }
             >
+                {item.imageUrl && <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />}
                 <span className="absolute top-2.5 left-2.5 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md" style={{ backgroundColor: `${color}48`, color }}>
                     {category?.name ?? 'Uncategorized'}
                 </span>

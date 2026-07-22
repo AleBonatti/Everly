@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createItemInputSchema, type CreateItemInput, type Item, type Category } from '@everly/shared';
+import { useUploadItemImage } from '../hooks/useItems';
 import { TextField } from './TextField';
 import { Button } from './Button';
 
@@ -33,6 +34,14 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
         },
     });
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [imageError, setImageError] = useState('');
+    const uploadImage = useUploadItemImage();
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             if (event.key === 'Escape') onClose();
@@ -44,6 +53,25 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
     // eslint-disable-next-line react-hooks/incompatible-library
     const selectedCategoryId = watch('categoryId');
     const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file || !item) return;
+
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            setImageError('Only JPEG, PNG, and WebP images are allowed');
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            setImageError('Image must be smaller than 5MB');
+            return;
+        }
+
+        setImageError('');
+        setPreviewUrl(URL.createObjectURL(file));
+        uploadImage.mutate({ id: item.id, file });
+    }
 
     return (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -59,12 +87,27 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="p-6 flex flex-col gap-4.5">
-                        <div
-                            className="aspect-[16/7] rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/40"
-                            style={{ backgroundColor: `${selectedCategory?.color ?? '#6b7280'}22` }}
-                        >
-                            <span className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">Photo upload · coming in a later phase</span>
-                        </div>
+                        {item ? (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="relative aspect-[16/7] rounded-lg overflow-hidden border border-dashed border-muted-foreground/40 cursor-pointer"
+                                style={{ backgroundColor: `${selectedCategory?.color ?? '#6b7280'}22` }}
+                            >
+                                {previewUrl || item.imageUrl ? (
+                                    <img src={previewUrl ?? item.imageUrl ?? ''} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-wide text-muted-foreground uppercase">Click to add photo</span>
+                                )}
+                                {uploadImage.isPending && <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white">Uploading...</span>}
+                            </button>
+                        ) : (
+                            <div className="aspect-[16/7] rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/40 bg-surface-inset">
+                                <span className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase text-center px-4">Save the item first to add a photo</span>
+                            </div>
+                        )}
+                        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
+                        {imageError && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{imageError}</div>}
 
                         <TextField label="Title" placeholder="e.g. Try the tasting menu at Lumen" {...register('title')} error={errors.title?.message} />
 
