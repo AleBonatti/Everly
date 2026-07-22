@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { useItems, useUpdateItem } from '../hooks/useItems';
+import { useCreateItem, useDeleteItem, useItems, useUpdateItem } from '../hooks/useItems';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { Button } from '../components/Button';
 import { ItemCard } from '../components/ItemCard';
+import { ItemModal } from '../components/ItemModal';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ApiError } from '../lib/api-client';
+import type { Item, CreateItemInput } from '@everly/shared';
 
 const PAGE_SIZE = 12;
 
@@ -15,6 +19,14 @@ export function ItemsPage() {
     const [page, setPage] = useState(1);
     const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
     const categoryMenuRef = useRef<HTMLDivElement>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<Item | undefined>(undefined);
+    const [formError, setFormError] = useState('');
+    const [confirmingDelete, setConfirmingDelete] = useState<Item | undefined>(undefined);
+    const [deleteError, setDeleteError] = useState('');
+
+    const createItem = useCreateItem();
+    const deleteItemMutation = useDeleteItem();
 
     useClickOutside(categoryMenuRef, () => setCategoryMenuOpen(false));
 
@@ -34,15 +46,60 @@ export function ItemsPage() {
     const items = data?.items ?? [];
     const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
-    useEffect(() => {
-        if (data && page > Math.max(1, Math.ceil(data.total / data.pageSize)) && page !== 1) {
-            setPage(1);
-        }
-    }, [data, page]);
-
     function toggleCategoryFilter(categoryId: string) {
         setSelectedCategories((current) => (current.includes(categoryId) ? current.filter((id) => id !== categoryId) : [...current, categoryId]));
         setPage(1);
+    }
+
+    function openAdd() {
+        setEditingItem(undefined);
+        setFormError('');
+        setModalOpen(true);
+    }
+
+    function openEdit(item: Item) {
+        setEditingItem(item);
+        setFormError('');
+        setModalOpen(true);
+    }
+
+    function closeModal() {
+        setModalOpen(false);
+        setEditingItem(undefined);
+    }
+
+    function handleSubmit(input: CreateItemInput) {
+        setFormError('');
+        const mutation = editingItem ? updateItem.mutateAsync({ id: editingItem.id, input }) : createItem.mutateAsync(input);
+
+        mutation.then(closeModal).catch((error) => {
+            setFormError(error instanceof ApiError ? error.message : 'Something went wrong');
+        });
+    }
+
+    function handleConfirmDelete() {
+        if (!confirmingDelete) return;
+        deleteItemMutation.mutate(confirmingDelete.id, {
+            onSuccess: () => {
+                setConfirmingDelete(undefined);
+                closeModal();
+                handleAfterRemovalFromPage();
+            },
+            onError: (error) => {
+                setDeleteError(error instanceof ApiError ? error.message : 'Something went wrong');
+                setConfirmingDelete(undefined);
+            },
+        });
+    }
+
+    function handleAfterRemovalFromPage() {
+        if (items.length === 1 && page > 1) {
+            setPage((current) => current - 1);
+        }
+    }
+
+    function handleArchiveToggle(item: Item) {
+        updateItem.mutate({ id: item.id, input: { isArchived: !item.isArchived } }, { onSuccess: handleAfterRemovalFromPage });
     }
 
     const categoryButtonLabel =
@@ -143,7 +200,7 @@ export function ItemsPage() {
                     >
                         Archived
                     </button>
-                    <Button onClick={() => {}}>+ Add item</Button>
+                    <Button onClick={openAdd}>+ Add item</Button>
                 </div>
             </div>
 
@@ -162,16 +219,12 @@ export function ItemsPage() {
                     </div>
                 )}
 
+                {deleteError && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg mb-4 max-w-xl">{deleteError}</div>}
+
                 {items.length > 0 && (
                     <div className="grid gap-5.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                         {items.map((item) => (
-                            <ItemCard
-                                key={item.id}
-                                item={item}
-                                category={categoryById.get(item.categoryId)}
-                                onEdit={() => {}}
-                                onArchiveToggle={() => updateItem.mutate({ id: item.id, input: { isArchived: !item.isArchived } })}
-                            />
+                            <ItemCard key={item.id} item={item} category={categoryById.get(item.categoryId)} onEdit={() => openEdit(item)} onArchiveToggle={() => handleArchiveToggle(item)} />
                         ))}
                     </div>
                 )}
@@ -209,6 +262,28 @@ export function ItemsPage() {
                     </div>
                 )}
             </div>
+
+            {modalOpen && (
+                <ItemModal
+                    item={editingItem}
+                    categories={categories ?? []}
+                    onClose={closeModal}
+                    onSubmit={handleSubmit}
+                    onDelete={editingItem ? () => setConfirmingDelete(editingItem) : undefined}
+                    isSubmitting={createItem.isPending || updateItem.isPending}
+                    error={formError}
+                />
+            )}
+
+            {confirmingDelete && (
+                <ConfirmDialog
+                    title="Delete item?"
+                    message={`Are you sure you want to delete "${confirmingDelete.title}"? This can't be undone.`}
+                    isConfirming={deleteItemMutation.isPending}
+                    onConfirm={handleConfirmDelete}
+                    onCancel={() => setConfirmingDelete(undefined)}
+                />
+            )}
         </div>
     );
 }
