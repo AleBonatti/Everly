@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import sharp from 'sharp';
+import { supabase } from '../lib/supabase.js';
 import { createItemInputSchema, updateItemInputSchema, itemsQuerySchema, paginatedItemsSchema, itemSchema, errorResponseSchema } from '@everly/shared';
 import { db } from '../db/index.js';
 import { items, categories } from '../db/schema.js';
@@ -137,6 +140,66 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
             }
 
             return reply.send({ message: 'Item deleted' });
+        },
+    );
+
+    app.post(
+        '/:id/image',
+        {
+            schema: {
+                params: z.object({ id: z.uuid() }),
+                response: { 200: itemSchema, 404: errorResponseSchema, 400: errorResponseSchema, 500: errorResponseSchema },
+            },
+        },
+        async (request, reply) => {
+            const { id } = request.params;
+
+            const item = await db.query.items.findFirst({
+                where: and(eq(items.id, id), eq(items.userId, request.user.sub)),
+            });
+
+            if (!item) {
+                return reply.status(404).send({ message: 'Item not found' });
+            }
+
+            const file = await request.file();
+
+            if (!file) {
+                return reply.status(400).send({ message: 'No file uploaded' });
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.mimetype)) {
+                return reply.status(400).send({ message: 'Only JPEG, PNG, and WebP images are allowed' });
+            }
+
+            const buffer = await file.toBuffer();
+
+            let resized: Buffer;
+            try {
+                resized = await sharp(buffer).resize(1600, 1600, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 80 }).toBuffer();
+            } catch {
+                return reply.status(400).send({ message: 'Invalid image file' });
+            }
+
+            const filePath = `${request.user.sub}/${id}-${randomUUID()}.jpg`;
+
+            const { error: uploadError } = await supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!).upload(filePath, resized, { contentType: 'image/jpeg', upsert: true });
+
+            if (uploadError) {
+                app.log.error(uploadError);
+                return reply.status(500).send({ message: 'Failed to upload image' });
+            }
+
+            const { data: publicUrlData } = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!).getPublicUrl(filePath);
+
+            const [updated] = await db.update(items).set({ imageUrl: publicUrlData.publicUrl, updatedAt: new Date() }).where(eq(items.id, id)).returning();
+
+            if (!updated) {
+                throw new Error('Failed to update item with image URL');
+            }
+
+            return reply.send(serializeItem(updated));
         },
     );
 };
