@@ -31,7 +31,7 @@ export function RegisterPage() {
     } = useForm<RegisterFormInput>({ resolver: zodResolver(registerFormSchema) });
 
     const mutation = useMutation({
-        mutationFn: withDelay(registerUser),
+        mutationFn: withDelay((data: RegisterFormInput) => registerUser({ name: data.name, email: data.email, password: data.password })),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
             navigate('/');

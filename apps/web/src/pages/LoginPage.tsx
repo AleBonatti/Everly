@@ -23,7 +23,7 @@ export function LoginPage() {
     } = useForm<LoginInput>({ resolver: zodResolver(loginInputSchema) });
 
     const mutation = useMutation({
-        mutationFn: withDelay(login),
+        mutationFn: withDelay((data: LoginInput) => login(data)),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
             navigate('/');
