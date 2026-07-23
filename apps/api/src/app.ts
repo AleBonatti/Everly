@@ -11,9 +11,9 @@ import { authRoutes } from './routes/auth.js';
 import { categoriesRoutes } from './routes/categories.js';
 import { itemsRoutes } from './routes/items.js';
 
-export function buildApp() {
+export function buildApp(options: { logger?: boolean } = {}) {
     const app = Fastify({
-        logger: true,
+        logger: options.logger ?? true,
     }).withTypeProvider<ZodTypeProvider>();
 
     app.setValidatorCompiler(validatorCompiler);

@@ -11,7 +11,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 
     return (
         <div className="flex flex-col gap-1.5">
-            <label id="{inputId}" className="text-xs font-semibold text-muted-foreground">
+            <label htmlFor={inputId} className="text-xs font-semibold text-muted-foreground">
                 {label}
             </label>
             <input ref={ref} id={inputId} {...inputProps} className="bg-surface-inset border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none" />
