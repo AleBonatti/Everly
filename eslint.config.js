@@ -34,6 +34,12 @@ export default defineConfig([
             globals: globals.browser,
         },
     },
+    {
+        files: ['apps/web/tests/**/*.{ts,tsx}'],
+        rules: {
+            'react-refresh/only-export-components': 'off',
+        },
+    },
 
     eslintConfigPrettier,
 ]);
