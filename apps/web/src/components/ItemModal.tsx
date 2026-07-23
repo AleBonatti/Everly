@@ -2,7 +2,9 @@ import { useRef, useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createItemInputSchema, type CreateItemInput, type Item, type Category } from '@everly/shared';
+import { ApiError } from '../lib/api-client';
 import { useUploadItemImage } from '../hooks/useItems';
+import { LocationPicker } from './LocationPicker';
 import { TextField } from './TextField';
 import { Button } from './Button';
 
@@ -22,6 +24,7 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
         handleSubmit,
         control,
         watch,
+        setValue,
         formState: { errors },
     } = useForm<CreateItemInput>({
         resolver: zodResolver(createItemInputSchema),
@@ -31,6 +34,8 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
             categoryId: item?.categoryId ?? categories[0]?.id ?? '',
             importance: item?.importance ?? 3,
             locationLabel: item?.locationLabel ?? '',
+            latitude: item?.latitude ?? undefined,
+            longitude: item?.longitude ?? undefined,
         },
     });
 
@@ -53,6 +58,13 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
     // eslint-disable-next-line react-hooks/incompatible-library
     const selectedCategoryId = watch('categoryId');
     const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
+    const latitude = watch('latitude');
+    const longitude = watch('longitude');
+
+    function handleLocationChange(lat: number, lng: number) {
+        setValue('latitude', lat, { shouldDirty: true });
+        setValue('longitude', lng, { shouldDirty: true });
+    }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -70,7 +82,14 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
 
         setImageError('');
         setPreviewUrl(URL.createObjectURL(file));
-        uploadImage.mutate({ id: item.id, file });
+        uploadImage.mutate(
+            { id: item.id, file },
+            {
+                onError: (error) => {
+                    setImageError(error instanceof ApiError ? error.message : 'Something went wrong');
+                },
+            },
+        );
     }
 
     return (
@@ -179,7 +198,9 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
                             </fieldset>
                         </div>
 
-                        <TextField label="Location (optional)" placeholder="e.g. Kyoto, Japan" {...register('locationLabel')} error={errors.locationLabel?.message} />
+                        <LocationPicker latitude={latitude} longitude={longitude} onChange={handleLocationChange} />
+
+                        <TextField label="Location name" placeholder="e.g. Kyoto, Japan" {...register('locationLabel')} error={errors.locationLabel?.message} />
 
                         {error && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{error}</div>}
                     </div>

@@ -45,14 +45,15 @@ export function LoginPage() {
                 <TextField label="Email" type="email" placeholder="you@example.com" {...register('email')} error={errors.email?.message} />
                 <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
-                        <label htmlFor="{inputId}" className="text-xs font-semibold text-muted-foreground">
+                        <label htmlFor="forgot-password" className="text-xs font-semibold text-muted-foreground">
                             Password
                         </label>
-                        <Link id="forgot" to="/forgot-password" className="text-xs text-accent">
+                        <Link to="/forgot-password" className="text-xs text-accent">
                             Forgot password?
                         </Link>
                     </div>
                     <input
+                        id="forgot-password"
                         type="password"
                         placeholder="••••••••"
                         {...register('password')}
