@@ -68,3 +68,6 @@ jobs:
               run: npx drizzle-kit migrate
               env:
                   DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+            - name: Trigger Render deploy
+              run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
