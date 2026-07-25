@@ -118,7 +118,11 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     );
 
     app.post('/logout', async (_request, reply) => {
-        reply.clearCookie('token', { path: '/' });
+        reply.clearCookie('token', {
+            path: '/',
+            secure: isProduction(),
+            sameSite: isProduction() ? 'none' : 'lax',
+        });
         return reply.send({ message: 'Logged out' });
     });
 };
