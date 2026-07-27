@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router';
+import { useMutation } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { registerInputSchema } from '@everly/shared';
+import { registerInputSchema, type AuthUser } from '@everly/shared';
 import { register as registerUser } from '../lib/api/auth';
 import { ApiError } from '../lib/api-client';
 import { withDelay } from '../lib/with-delay';
@@ -19,9 +19,8 @@ const registerFormSchema = registerInputSchema.extend({ confirmPassword: z.strin
 type RegisterFormInput = z.infer<typeof registerFormSchema>;
 
 export function RegisterPage() {
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const [serverError, setServerError] = useState('');
+    const [registeredEmail, setRegisteredEmail] = useState('');
 
     const {
         register,
@@ -30,11 +29,10 @@ export function RegisterPage() {
         formState: { errors },
     } = useForm<RegisterFormInput>({ resolver: zodResolver(registerFormSchema) });
 
-    const mutation = useMutation({
+    const mutation = useMutation<AuthUser, ApiError, RegisterFormInput>({
         mutationFn: withDelay((data: RegisterFormInput) => registerUser({ name: data.name, email: data.email, password: data.password })),
-        onSuccess: (user) => {
-            queryClient.setQueryData(['me'], user);
-            navigate('/');
+        onSuccess: (_user, variables) => {
+            setRegisteredEmail(variables.email);
         },
         onError: (error) => {
             setServerError(error instanceof ApiError ? error.message : 'Something went wrong');
@@ -42,6 +40,27 @@ export function RegisterPage() {
             resetField('confirmPassword');
         },
     });
+
+    if (registeredEmail) {
+        return (
+            <div className="flex flex-col items-center text-center gap-3.5 py-2">
+                <div className="w-13 h-13 rounded-full bg-success-bg flex items-center justify-center text-2xl text-success">✓</div>
+                <h1 className="text-lg text-foreground">Check your inbox</h1>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                    We sent a verification link to
+                    <br />
+                    <strong className="text-foreground/85">{registeredEmail}</strong>
+                    <br />
+                    Verify your email to finish creating your account.
+                </p>
+                <div className="text-center mt-5 text-sm text-muted-foreground">
+                    <Link to="/login" className="text-accent">
+                        ← Back to log in
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-6">

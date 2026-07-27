@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginInputSchema, type LoginInput } from '@everly/shared';
-import { login } from '../lib/api/auth';
+import { loginInputSchema, type LoginInput, type AuthUser } from '@everly/shared';
+import { login, resendVerification } from '../lib/api/auth';
 import { ApiError } from '../lib/api-client';
 import { withDelay } from '../lib/with-delay';
 import { TextField } from '../components/TextField';
@@ -14,6 +14,7 @@ export function LoginPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [serverError, setServerError] = useState('');
+    const [unverifiedEmail, setUnverifiedEmail] = useState('');
 
     const {
         register,
@@ -22,14 +23,24 @@ export function LoginPage() {
         formState: { errors },
     } = useForm<LoginInput>({ resolver: zodResolver(loginInputSchema) });
 
-    const mutation = useMutation({
+    const resendMutation = useMutation({
+        mutationFn: resendVerification,
+    });
+
+    const mutation = useMutation<AuthUser, ApiError, LoginInput>({
         mutationFn: withDelay((data: LoginInput) => login(data)),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
             navigate('/');
         },
-        onError: (error) => {
-            setServerError(error instanceof ApiError ? error.message : 'Something went wrong');
+        onError: (error, variables) => {
+            if (error instanceof ApiError && error.status === 403) {
+                setUnverifiedEmail(variables.email);
+                setServerError(error.message);
+            } else {
+                setServerError(error instanceof ApiError ? error.message : 'Something went wrong');
+                setUnverifiedEmail('');
+            }
             resetField('password');
         },
     });
@@ -62,7 +73,21 @@ export function LoginPage() {
                     {errors.password && <span className="text-xs text-destructive">{errors.password.message}</span>}
                 </div>
 
-                {serverError && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{serverError}</div>}
+                {serverError && (
+                    <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg flex flex-col gap-1.5">
+                        <span>{serverError}</span>
+                        {unverifiedEmail && (
+                            <button
+                                type="button"
+                                onClick={() => resendMutation.mutate({ email: unverifiedEmail })}
+                                disabled={resendMutation.isPending || resendMutation.isSuccess}
+                                className="text-left underline disabled:no-underline disabled:opacity-70"
+                            >
+                                {resendMutation.isSuccess ? 'Verification email sent' : resendMutation.isPending ? 'Sending...' : 'Resend verification email'}
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 <Button type="submit" isLoading={mutation.isPending} className="mt-1">
                     {mutation.isPending ? 'Logging in...' : 'Log in'}

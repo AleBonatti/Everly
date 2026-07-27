@@ -1,27 +1,34 @@
 {
-    "version": "7",
-    "dialect": "postgresql",
-    "entries": [
-        {
-            "idx": 0,
-            "version": "7",
-            "when": 1784202909529,
-            "tag": "0000_fine_misty_knight",
-            "breakpoints": true
-        },
-        {
-            "idx": 1,
-            "version": "7",
-            "when": 1784546333938,
-            "tag": "0001_fancy_hitman",
-            "breakpoints": true
-        },
-        {
-            "idx": 2,
-            "version": "7",
-            "when": 1784564477314,
-            "tag": "0002_soft_wiccan",
-            "breakpoints": true
-        }
-    ]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1784202909529,
+      "tag": "0000_fine_misty_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784546333938,
+      "tag": "0001_fancy_hitman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784564477314,
+      "tag": "0002_soft_wiccan",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785150904822,
+      "tag": "0003_exotic_daimon_hellstrom",
+      "breakpoints": true
+    }
+  ]
 }

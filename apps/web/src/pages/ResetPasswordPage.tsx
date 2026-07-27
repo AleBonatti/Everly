@@ -1,13 +1,58 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { resetPasswordInputSchema } from '@everly/shared';
+import { resetPassword } from '../lib/api/auth';
+import { ApiError } from '../lib/api-client';
+import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
+import { withDelay } from '../lib/with-delay';
+
+const resetPasswordFormSchema = resetPasswordInputSchema.extend({ confirmPassword: z.string() }).refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+});
+
+type ResetPasswordFormInput = z.infer<typeof resetPasswordFormSchema>;
 
 export function ResetPasswordPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token') ?? '';
     const [done, setDone] = useState(false);
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
+    const [serverError, setServerError] = useState('');
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<ResetPasswordFormInput>({
+        resolver: zodResolver(resetPasswordFormSchema),
+        defaultValues: { token },
+    });
+
+    const mutation = useMutation({
+        mutationFn: withDelay(resetPassword),
+        onSuccess: () => setDone(true),
+        onError: (error) => {
+            setServerError(error instanceof ApiError ? error.message : 'Something went wrong');
+        },
+    });
+
+    if (!token) {
+        return (
+            <div className="flex flex-col items-center text-center gap-3.5 py-2">
+                <h1 className="text-lg text-foreground">Invalid link</h1>
+                <p className="text-sm text-muted-foreground">This password reset link is missing its token. Please request a new one.</p>
+                <Link to="/forgot-password" className="text-accent text-sm">
+                    Request a new link
+                </Link>
+            </div>
+        );
+    }
 
     if (done) {
         return (
@@ -22,56 +67,22 @@ export function ResetPasswordPage() {
         );
     }
 
-    function handleSubmit(e: FormEvent) {
-        e.preventDefault();
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters.');
-            return;
-        }
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-        setError('');
-        setDone(true);
-    }
-
     return (
         <div className="flex flex-col gap-6">
             <div>
                 <h1 className="text-xl text-foreground mb-1">Set a new password</h1>
                 <p className="text-sm text-muted-foreground">Choose a new password for your account.</p>
             </div>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                    <label htmlFor="forgot" className="text-xs font-semibold text-muted-foreground">
-                        New password
-                    </label>
-                    <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="At least 8 characters"
-                        className="bg-surface-inset border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none"
-                    />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                    <label htmlFor="confirm_password" className="text-xs font-semibold text-muted-foreground">
-                        Confirm new password
-                    </label>
-                    <input
-                        id="confirm_password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Repeat password"
-                        className="bg-surface-inset border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none"
-                    />
-                </div>
-                {error && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{error}</div>}
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="flex flex-col gap-4">
+                <input type="hidden" {...register('token')} />
+                <TextField label="New password" type="password" placeholder="At least 8 characters" {...register('password')} error={errors.password?.message} />
+                <TextField label="Confirm new password" type="password" placeholder="Repeat password" {...register('confirmPassword')} error={errors.confirmPassword?.message} />
 
-                <Button type="submit">Update password</Button>
+                {serverError && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{serverError}</div>}
+
+                <Button type="submit" isLoading={mutation.isPending}>
+                    {mutation.isPending ? 'Updating...' : 'Update password'}
+                </Button>
             </form>
         </div>
     );

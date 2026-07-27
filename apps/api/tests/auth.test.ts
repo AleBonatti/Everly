@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { db } from '../src/db/index.js';
+import { users } from '../src/db/schema.js';
 import { createTestApp } from './helpers/app.js';
 import { resetDatabase } from './helpers/db.js';
 import { registerAndLogin } from './helpers/auth.js';
@@ -12,20 +15,14 @@ describe('auth', () => {
         const app = createTestApp();
         await app.ready();
 
-        const response = await app.inject({
-            method: 'POST',
-            url: '/auth/register',
-            payload: { name: 'Ada Lovelace', email: 'ada@example.com', password: 'supersecret123' },
-        });
+        const { cookieHeader, user } = await registerAndLogin(app, { name: 'Ada Lovelace', email: 'ada@example.com' });
 
-        expect(response.statusCode).toBe(201);
-        expect(response.json()).toMatchObject({ name: 'Ada Lovelace', email: 'ada@example.com' });
+        expect(user).toMatchObject({ name: 'Ada Lovelace', email: 'ada@example.com' });
 
-        const cookie = response.cookies.find((c) => c.name === 'token');
         const categoriesResponse = await app.inject({
             method: 'GET',
             url: '/categories',
-            headers: { cookie: `${cookie?.name}=${cookie?.value}` },
+            headers: { cookie: cookieHeader },
         });
         expect(categoriesResponse.json()).toHaveLength(3);
 
@@ -118,6 +115,167 @@ describe('auth', () => {
         expect(response.statusCode).toBe(200);
         const clearedCookie = response.cookies.find((c) => c.name === 'token');
         expect(clearedCookie?.value).toBe('');
+
+        await app.close();
+    });
+
+    it('forgot-password always returns the same response, and issues a usable reset token when the email exists', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'forgot@example.com' });
+
+        const existing = await app.inject({
+            method: 'POST',
+            url: '/auth/forgot-password',
+            payload: { email: 'forgot@example.com' },
+        });
+        const nonExistent = await app.inject({
+            method: 'POST',
+            url: '/auth/forgot-password',
+            payload: { email: 'ghost@example.com' },
+        });
+
+        expect(existing.statusCode).toBe(200);
+        expect(nonExistent.statusCode).toBe(200);
+        expect(existing.json().message).toBe(nonExistent.json().message);
+
+        const tokenRow = await db.query.passwordResetTokens.findFirst({});
+        expect(tokenRow).toBeDefined();
+
+        await app.close();
+    });
+
+    it('resets the password with a valid token, and the token cannot be reused', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'reset@example.com' });
+        await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'reset@example.com' } });
+
+        const tokenRow = await db.query.passwordResetTokens.findFirst({});
+        if (!tokenRow) {
+            throw new Error('No reset token was created');
+        }
+
+        const firstAttempt = await app.inject({
+            method: 'POST',
+            url: '/auth/reset-password',
+            payload: { token: tokenRow.token, password: 'brandnewpassword' },
+        });
+
+        expect(firstAttempt.statusCode).toBe(200);
+
+        const loginWithNewPassword = await app.inject({
+            method: 'POST',
+            url: '/auth/login',
+            payload: { email: 'reset@example.com', password: 'brandnewpassword' },
+        });
+        expect(loginWithNewPassword.statusCode).toBe(200);
+
+        const secondAttempt = await app.inject({
+            method: 'POST',
+            url: '/auth/reset-password',
+            payload: { token: tokenRow.token, password: 'anotherpassword' },
+        });
+        expect(secondAttempt.statusCode).toBe(400);
+
+        await app.close();
+    });
+
+    it('rejects reset-password with an invalid token', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/auth/reset-password',
+            payload: { token: 'not-a-real-token', password: 'somepassword' },
+        });
+
+        expect(response.statusCode).toBe(400);
+
+        await app.close();
+    });
+
+    it('rejects login for an unverified account', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await app.inject({
+            method: 'POST',
+            url: '/auth/register',
+            payload: { name: 'Unverified User', email: 'unverified@example.com', password: 'supersecret123' },
+        });
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/auth/login',
+            payload: { email: 'unverified@example.com', password: 'supersecret123' },
+        });
+
+        expect(response.statusCode).toBe(403);
+
+        await app.close();
+    });
+
+    it('verifies email with a valid token and logs the user in, and the token cannot be reused', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await app.inject({
+            method: 'POST',
+            url: '/auth/register',
+            payload: { name: 'Verify Me', email: 'verifyme@example.com', password: 'supersecret123' },
+        });
+
+        const tokenRow = await db.query.emailVerificationTokens.findFirst({});
+        if (!tokenRow) {
+            throw new Error('No verification token was created');
+        }
+
+        const firstAttempt = await app.inject({
+            method: 'POST',
+            url: '/auth/verify-email',
+            payload: { token: tokenRow.token },
+        });
+
+        expect(firstAttempt.statusCode).toBe(200);
+        expect(firstAttempt.cookies.some((c) => c.name === 'token')).toBe(true);
+
+        const user = await db.query.users.findFirst({ where: eq(users.email, 'verifyme@example.com') });
+        expect(user?.emailVerified).toBe(true);
+
+        const secondAttempt = await app.inject({
+            method: 'POST',
+            url: '/auth/verify-email',
+            payload: { token: tokenRow.token },
+        });
+        expect(secondAttempt.statusCode).toBe(400);
+
+        await app.close();
+    });
+
+    it('resend-verification always returns the same response, regardless of account state', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'alreadyverified@example.com' });
+
+        const forAlreadyVerified = await app.inject({
+            method: 'POST',
+            url: '/auth/resend-verification',
+            payload: { email: 'alreadyverified@example.com' },
+        });
+        const forNonExistent = await app.inject({
+            method: 'POST',
+            url: '/auth/resend-verification',
+            payload: { email: 'ghost@example.com' },
+        });
+
+        expect(forAlreadyVerified.statusCode).toBe(200);
+        expect(forNonExistent.statusCode).toBe(200);
+        expect(forAlreadyVerified.json().message).toBe(forNonExistent.json().message);
 
         await app.close();
     });
