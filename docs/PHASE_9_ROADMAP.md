@@ -104,10 +104,10 @@ This is Render's free tier specifically — free web services spin down after a 
 ## Suggested build order
 
 Given the shared dependencies above, roughly:
-1. SMTP/Mailtrap setup (serves §2 and §3 together)
-2. Email verification (§3)
-3. Forgot/reset password (§2)
-4. Bug fixes (§10, §11) — cheap, independent, no reason to wait
+1. ~~SMTP/Mailtrap setup (serves §2 and §3 together)~~ — done
+2. ~~Email verification (§3)~~ — done
+3. ~~Forgot/reset password (§2)~~ — done
+4. ~~Bug fixes (§10, §11)~~ — done
 5. Search debounce + spinner (§5) — small, independent
 6. Notes field (§7) — small, independent
 7. Map improvements (§6) — introduces Nominatim

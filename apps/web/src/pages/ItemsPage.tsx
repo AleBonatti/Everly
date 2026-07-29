@@ -8,11 +8,13 @@ import { ItemModal } from '../components/ItemModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ApiError } from '../lib/api-client';
 import type { Item, CreateItemInput } from '@everly/shared';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 const PAGE_SIZE = 12;
 
 export function ItemsPage() {
     const [search, setSearch] = useState('');
+    const debouncedSearch = useDebouncedValue(search);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [sort, setSort] = useState<'newest' | 'importance'>('newest');
     const [showArchived, setShowArchived] = useState(false);
@@ -32,14 +34,17 @@ export function ItemsPage() {
     useClickOutside(categoryMenuRef, () => setCategoryMenuOpen(false));
 
     const { data: categories } = useCategories();
-    const { data, isLoading } = useItems({
+    const { data, isLoading, isFetching } = useItems({
         categories: selectedCategories.length > 0 ? selectedCategories : undefined,
-        q: search || undefined,
+        q: debouncedSearch || undefined,
         archived: showArchived,
         sort,
         page,
         pageSize: PAGE_SIZE,
     });
+
+    const isSearching = search !== debouncedSearch || isFetching;
+
     const updateItem = useUpdateItem();
     const toggleArchived = useToggleItemArchived();
 
@@ -126,7 +131,7 @@ export function ItemsPage() {
     return (
         <div>
             <div className="flex items-center gap-3 px-8 py-6.5 border-b border-border-subtle flex-wrap">
-                <div className="flex items-center gap-2 bg-surface-inset border border-border rounded-lg px-3 py-2 min-w-[220px]">
+                <div className="flex items-center gap-2 bg-surface-inset border border-border rounded-lg px-3 py-2 min-w-55">
                     <span className="text-sm text-muted-foreground">⌕</span>
                     <input
                         value={search}
@@ -137,6 +142,7 @@ export function ItemsPage() {
                         placeholder="Search your list..."
                         className="bg-transparent border-none outline-none text-sm text-foreground w-full"
                     />
+                    {isSearching && <span className="size-3.5 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin shrink-0" />}
                 </div>
 
                 <div ref={categoryMenuRef} className="relative">
@@ -149,7 +155,7 @@ export function ItemsPage() {
                         <span className="text-[10px] text-muted-foreground">▾</span>
                     </button>
                     {categoryMenuOpen && (
-                        <div className="absolute left-0 top-[calc(100%+8px)] w-[200px] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden z-20">
+                        <div className="absolute left-0 top-[calc(100%+8px)] w-50 bg-surface border border-border rounded-lg shadow-2xl overflow-hidden z-20">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -216,7 +222,7 @@ export function ItemsPage() {
                 </div>
             </div>
 
-            <div className="max-w-[1280px] w-full mx-auto px-8 py-11">
+            <div className="max-w-7xl w-full mx-auto px-8 py-11">
                 {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
 
                 {!isLoading && items.length === 0 && (
