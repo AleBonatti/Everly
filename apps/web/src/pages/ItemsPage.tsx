@@ -142,7 +142,7 @@ export function ItemsPage() {
                         placeholder="Search your list..."
                         className="bg-transparent border-none outline-none text-sm text-foreground w-full"
                     />
-                    {isSearching && <span className="size-3.5 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin shrink-0" />}
+                    <span className={`size-3.5 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin shrink-0 ${isSearching ? 'opacity-100' : 'opacity-0'}`} />
                 </div>
 
                 <div ref={categoryMenuRef} className="relative">
