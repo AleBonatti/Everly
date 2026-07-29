@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { useCreateItem, useDeleteItem, useItems, useUpdateItem } from '../hooks/useItems';
+import { useCreateItem, useDeleteItem, useItems, useUpdateItem, useToggleItemArchived } from '../hooks/useItems';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { Button } from '../components/Button';
 import { ItemCard } from '../components/ItemCard';
@@ -24,6 +24,7 @@ export function ItemsPage() {
     const [formError, setFormError] = useState('');
     const [confirmingDelete, setConfirmingDelete] = useState<Item | undefined>(undefined);
     const [deleteError, setDeleteError] = useState('');
+    const [confirmingArchive, setConfirmingArchive] = useState<Item | undefined>(undefined);
 
     const createItem = useCreateItem();
     const deleteItemMutation = useDeleteItem();
@@ -40,6 +41,7 @@ export function ItemsPage() {
         pageSize: PAGE_SIZE,
     });
     const updateItem = useUpdateItem();
+    const toggleArchived = useToggleItemArchived();
 
     const categoryById = useMemo(() => new Map(categories?.map((category) => [category.id, category])), [categories]);
 
@@ -99,7 +101,17 @@ export function ItemsPage() {
     }
 
     function handleArchiveToggle(item: Item) {
-        updateItem.mutate({ id: item.id, input: { isArchived: !item.isArchived } }, { onSuccess: handleAfterRemovalFromPage });
+        if (item.isArchived) {
+            toggleArchived.mutate({ id: item.id, isArchived: false }, { onSuccess: handleAfterRemovalFromPage });
+        } else {
+            setConfirmingArchive(item);
+        }
+    }
+
+    function handleConfirmArchive() {
+        if (!confirmingArchive) return;
+        toggleArchived.mutate({ id: confirmingArchive.id, isArchived: true }, { onSuccess: handleAfterRemovalFromPage });
+        setConfirmingArchive(undefined);
     }
 
     const categoryButtonLabel =
@@ -244,7 +256,7 @@ export function ItemsPage() {
                                 key={n}
                                 type="button"
                                 onClick={() => setPage(n)}
-                                className={`min-w-[34px] h-[34px] rounded-lg text-sm border cursor-pointer ${
+                                className={`min-w-8.5 h-8.5 rounded-lg text-sm border cursor-pointer ${
                                     n === page ? 'bg-accent text-accent-foreground border-accent font-bold' : 'bg-surface-inset text-foreground/80 border-border'
                                 }`}
                             >
@@ -282,6 +294,17 @@ export function ItemsPage() {
                     isConfirming={deleteItemMutation.isPending}
                     onConfirm={handleConfirmDelete}
                     onCancel={() => setConfirmingDelete(undefined)}
+                />
+            )}
+
+            {confirmingArchive && (
+                <ConfirmDialog
+                    title="Mark as done?"
+                    message={`Mark "${confirmingArchive.title}" as done? You can restore it later from the Archived list.`}
+                    confirmLabel="Mark done"
+                    isConfirming={toggleArchived.isPending}
+                    onConfirm={handleConfirmArchive}
+                    onCancel={() => setConfirmingArchive(undefined)}
                 />
             )}
         </div>

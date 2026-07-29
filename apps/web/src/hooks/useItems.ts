@@ -26,6 +26,14 @@ export function useUpdateItem() {
     });
 }
 
+export function useToggleItemArchived() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, isArchived }: { id: string; isArchived: boolean }) => updateItem(id, { isArchived }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    });
+}
+
 export function useUploadItemImage() {
     const queryClient = useQueryClient();
     return useMutation({
