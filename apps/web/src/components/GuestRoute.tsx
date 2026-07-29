@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from 'react-router';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import { LoadingScreen } from './LoadingScreen';
 
 export function GuestRoute() {
     const { data, isLoading } = useCurrentUser();
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <LoadingScreen />;
     }
 
     if (data) {
