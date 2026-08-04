@@ -4,7 +4,7 @@ export const createItemInputSchema = z.object({
     categoryId: z.uuid(),
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
-    notes: z.string().nullable(),
+    notes: z.string().optional(),
     imageUrl: z.url().optional(),
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
