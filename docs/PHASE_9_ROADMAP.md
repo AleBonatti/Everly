@@ -49,13 +49,15 @@ Right now every keystroke in the search box immediately updates state, which is 
 - **Debounce**: delay actually triggering the query until typing pauses (~300–400ms) — a small custom hook (`useDebouncedValue`) wrapping the raw input state.
 - **Loading indicator**: use TanStack Query's `isFetching` (not `isLoading`) — genuinely the right tool here, and a concept not yet used in this project. `isLoading` is only true on the very first load; `isFetching` is true on *any* fetch, including background refetches triggered by typing — exactly what a search spinner needs to reflect.
 
-## 6. Map — draggable marker + address search
+## 6. Map — draggable marker + address search — done
 
-**Draggable marker**: `react-leaflet`'s `<Marker>` supports a `draggable` prop and a `dragend` event handler — a small, contained addition to the existing `LocationPicker`.
+**Draggable marker**: added `draggable` + a `dragend` handler on the existing `<Marker>` in `LocationPicker` — calls the same `onChange` callback used by click-to-place and geolocation, so all three interactions funnel through one code path.
 
-**Address search**: this needs a geocoding service (turning typed text into coordinates) — a genuinely new kind of external dependency. Recommend **Nominatim**, OpenStreetMap's own free geocoding service — pairs naturally with the Leaflet+OSM setup already in place, no API key needed. Worth knowing its free public endpoint has real rate limits meant for light use, not high-traffic production — fine for this project, worth knowing if this ever needed to scale.
+**Address search**: added via **Nominatim**, OpenStreetMap's free geocoding service — no API key, pairs naturally with the existing Leaflet+OSM setup. Implemented as a plain `fetch` in `apps/web/src/lib/api/geocoding.ts` (deliberately bypassing the app's own `request()` API client, since that's built for our backend, not third-party APIs), debounced via the existing `useDebouncedValue` hook, with a 3-character minimum before searching to respect Nominatim's light-use rate limits.
 
-**This overlaps with §8 (AI item info) below** — same geocoding need, worth building once and reusing.
+Two real bugs surfaced and fixed during this work, worth remembering for future Leaflet use: (1) Leaflet's map panes and zoom controls paint above normal page content regardless of DOM order, requiring the results dropdown to use `z-[2000]` — ordinary `z-10`/`z-50` values lose to Leaflet's internal layers; (2) an effect that synchronously called `setState` on early return (`if (query too short) setResults([])`) triggered React's "setState synchronously within an effect" warning — fixed by removing that branch entirely and computing the empty-state as a derived value at render time instead, so `results` state is only ever updated from the async fetch's resolution, never synchronously inside the effect body.
+
+**This overlaps with §9 (AI item info) below** — same geocoding need, worth reusing if that feature is ever revisited.
 
 ## 7. New `notes` field on items — done
 
@@ -110,6 +112,6 @@ Given the shared dependencies above, roughly:
 4. ~~Bug fixes (§10, §11)~~ — done
 5. ~~Search debounce + spinner (§5)~~ — done
 6. ~~Notes field (§7)~~ — done
-7. Map improvements (§6) — introduces Nominatim
+7. ~~Map improvements (§6)~~ — done
 8. User settings (§8) — benefits from password-change infra already built in step 3
 9. AI integration (§9) — **on hold**, revisit after the above ships
