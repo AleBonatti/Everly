@@ -4,6 +4,9 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { searchAddress, type GeocodingResult } from '../lib/api/geocoding';
+
 import 'leaflet/dist/leaflet.css';
 
 // @ts-expect-error - _getIconUrl is a private Leaflet API; this is the standard workaround for the Vite/webpack bundler icon-path bug
@@ -48,6 +51,11 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
     const [geoError, setGeoError] = useState('');
     const hasPosition = latitude !== undefined && longitude !== undefined;
 
+    const [addressQuery, setAddressQuery] = useState('');
+    const debouncedQuery = useDebouncedValue(addressQuery);
+    const [results, setResults] = useState<GeocodingResult[]>([]);
+    const [searchError, setSearchError] = useState('');
+
     function handleUseCurrentLocation() {
         if (!navigator.geolocation) {
             setGeoError('Geolocation is not supported by this browser');
@@ -60,6 +68,38 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
         );
     }
 
+    useEffect(() => {
+        if (debouncedQuery.trim().length < 3) {
+            return;
+        }
+
+        let cancelled = false;
+        searchAddress(debouncedQuery)
+            .then((found) => {
+                if (!cancelled) {
+                    setResults(found);
+                    setSearchError('');
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setSearchError('Address search failed');
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [debouncedQuery]);
+
+    const visibleResults = debouncedQuery.trim().length < 3 ? [] : results;
+
+    function handleSelectResult(result: GeocodingResult) {
+        onChange(result.latitude, result.longitude);
+        setAddressQuery('');
+        setResults([]);
+    }
+
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -70,10 +110,47 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
                     Use my current location
                 </button>
             </div>
-            <div className="h-[170px] rounded-lg overflow-hidden border border-border">
+
+            <div className="relative">
+                <input
+                    value={addressQuery}
+                    onChange={(e) => setAddressQuery(e.target.value)}
+                    placeholder="Search for an address..."
+                    className="w-full bg-surface-inset border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none"
+                />
+                {visibleResults.length > 0 && (
+                    <div className="absolute left-0 top-[calc(100%+4px)] w-full bg-surface border border-border rounded-lg shadow-2xl overflow-hidden z-2000 max-h-45 overflow-y-auto">
+                        {visibleResults.map((result, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => handleSelectResult(result)}
+                                className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-surface-inset border-b border-border-subtle last:border-b-0"
+                            >
+                                {result.displayName}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {searchError && <span className="text-xs text-destructive">{searchError}</span>}
+            </div>
+
+            <div className="h-50 rounded-lg overflow-hidden border border-border">
                 <MapContainer center={hasPosition ? [latitude, longitude] : DEFAULT_CENTER} zoom={hasPosition ? SELECTED_ZOOM : DEFAULT_ZOOM} style={{ height: '100%', width: '100%' }}>
                     <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    {hasPosition && <Marker position={[latitude, longitude]} />}
+                    {hasPosition && (
+                        <Marker
+                            position={[latitude, longitude]}
+                            draggable
+                            eventHandlers={{
+                                dragend: (e) => {
+                                    const { lat, lng } = e.target.getLatLng();
+                                    onChange(lat, lng);
+                                },
+                            }}
+                        />
+                    )}
+
                     <ClickHandler onChange={onChange} />
                     <RecenterOnChange latitude={latitude} longitude={longitude} />
                 </MapContainer>
