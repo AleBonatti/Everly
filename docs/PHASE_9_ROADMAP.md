@@ -57,11 +57,11 @@ Right now every keystroke in the search box immediately updates state, which is 
 
 **This overlaps with §8 (AI item info) below** — same geocoding need, worth building once and reusing.
 
-## 7. New `notes` field on items
+## 7. New `notes` field on items — done
 
-Straightforward: a nullable `notes` text column, same category of change as `importance`/`isArchived` back in Phase 6 — migration, shared Zod schema update, a form field in `ItemModal`. The generic object-spread pattern already used in the update route means the API layer itself needs close to no changes.
+Added a nullable `notes` text column, same category of change as `importance`/`isArchived` back in Phase 6 — migration, shared Zod schema update, a form field in `ItemModal`. The generic object-spread pattern already used in the update route meant the API layer itself needed no changes.
 
-**Decided**: from a DB standpoint they're identical (both plain text) — the distinction is purely about where/how each is shown. `description` is shown in the grid/list view. `notes` is extra free text the user can add separately — e.g. jotted down once an item is marked done.
+**Decided**: from a DB standpoint they're identical (both plain text) — the distinction is purely about where/how each is shown. `description` is shown in the grid/list view. `notes` is extra free text the user can add separately, editable only in the item modal — e.g. jotted down once an item is marked done. `ItemCard` intentionally does not display `notes`.
 
 ## 8. "User settings" — make the link real
 
@@ -108,8 +108,8 @@ Given the shared dependencies above, roughly:
 2. ~~Email verification (§3)~~ — done
 3. ~~Forgot/reset password (§2)~~ — done
 4. ~~Bug fixes (§10, §11)~~ — done
-5. Search debounce + spinner (§5) — small, independent
-6. Notes field (§7) — small, independent
+5. ~~Search debounce + spinner (§5)~~ — done
+6. ~~Notes field (§7)~~ — done
 7. Map improvements (§6) — introduces Nominatim
 8. User settings (§8) — benefits from password-change infra already built in step 3
 9. AI integration (§9) — **on hold**, revisit after the above ships
