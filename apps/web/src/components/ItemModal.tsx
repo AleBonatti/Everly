@@ -31,6 +31,7 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
         defaultValues: {
             title: item?.title ?? '',
             description: item?.description ?? '',
+            notes: item?.notes ?? '',
             categoryId: item?.categoryId ?? categories[0]?.id ?? '',
             importance: item?.importance ?? 3,
             locationLabel: item?.locationLabel ?? '',
@@ -139,6 +140,19 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
                                 rows={3}
                                 placeholder="Why is this worth doing?"
                                 {...register('description')}
+                                className="bg-surface-inset border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none resize-y"
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="item-notes" className="text-xs font-semibold text-muted-foreground">
+                                Notes
+                            </label>
+                            <textarea
+                                id="item-notes"
+                                rows={3}
+                                placeholder="Any personal notes — e.g. add these once you've done it"
+                                {...register('notes')}
                                 className="bg-surface-inset border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none resize-y"
                             />
                         </div>

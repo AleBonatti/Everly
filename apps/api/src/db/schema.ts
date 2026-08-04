@@ -30,6 +30,7 @@ export const items = pgTable('items', {
         .references(() => categories.id, { onDelete: 'restrict' }),
     title: text('title').notNull(),
     description: text('description'),
+    notes: text('notes'),
     imageUrl: text('image_url'),
     latitude: doublePrecision('latitude'),
     longitude: doublePrecision('longitude'),
