@@ -95,7 +95,11 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 return newUser;
             });
 
-            await sendVerificationEmail(user.id, user.email);
+            try {
+                await sendVerificationEmail(user.id, user.email);
+            } catch (err) {
+                app.log.error(err, 'Failed to send verification email');
+            }
 
             return reply.status(201).send({ id: user.id, name: user.name, email: user.email });
         },
@@ -153,11 +157,15 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 await db.insert(passwordResetTokens).values({ userId: user.id, token, expiresAt });
 
                 const resetUrl = `${process.env.APP_URL}/reset-password?token=${token}`;
-                await sendEmail({
-                    to: user.email,
-                    subject: 'Reset your Everly password',
-                    html: `<p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
-                });
+                try {
+                    await sendEmail({
+                        to: user.email,
+                        subject: 'Reset your Everly password',
+                        html: `<p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+                    });
+                } catch (err) {
+                    app.log.error(err, 'Failed to send password reset email');
+                }
             }
 
             return reply.send({ message: 'If that email exists, we have sent a reset link.' });
@@ -248,7 +256,11 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             });
 
             if (user && !user.emailVerified) {
-                await sendVerificationEmail(user.id, user.email);
+                try {
+                    await sendVerificationEmail(user.id, user.email);
+                } catch (err) {
+                    app.log.error(err, 'Failed to send verification email');
+                }
             }
 
             return reply.send({ message: 'If that account needs verification, we have sent a new email.' });
