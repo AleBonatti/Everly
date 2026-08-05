@@ -40,7 +40,7 @@ export function resetPassword(input: ResetPasswordInput) {
 }
 
 export function verifyEmail(input: VerifyEmailInput) {
-    return request('/auth/verify-email', errorResponseSchema, {
+    return request('/auth/verify-email', authUserSchema, {
         method: 'POST',
         body: JSON.stringify(input),
     });
