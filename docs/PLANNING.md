@@ -105,7 +105,7 @@ You'll end up managing secrets in **four** places — this multiplicity is itsel
 
 - **Local `.env`** (gitignored) — local Postgres URL, JWT secret
 - **GitHub Actions secrets** — used only if CI needs to run migrations/tests against a real DB, or to trigger deploys
-- **Render env vars** — production `DATABASE_URL` (Supabase), `JWT_SECRET`, Supabase Storage keys, SMTP credentials (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`) and `APP_URL` (Vercel production URL, used to build email links)
+- **Render env vars** — production `DATABASE_URL` (Supabase), `JWT_SECRET`, Supabase Storage keys, SMTP credentials (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`) and `APP_URL` (Vercel production URL, used to build email links). **`SMTP_PORT` must be `2525`, not `587`** — Render's free tier blocks outbound SMTP on 587 (silent `ETIMEDOUT`), 2525 works with the same Mailtrap credentials.
 - **Vercel env vars** — `VITE_API_URL` pointing at the Render backend
 
 ## 9. CI/CD plan

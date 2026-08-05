@@ -10,6 +10,8 @@ Two separate requests — forgot/reset password (§2) and email confirmation (§
 
 This also means §2 and §3 should be built together, sharing this email setup, rather than as two unrelated tickets.
 
+**Production gotcha found the hard way**: Render's free tier blocks outbound SMTP on port 587 (`ETIMEDOUT` on connect, no other error) but allows it on port 2525 — same host, same credentials, only the port differs. Local dev worked fine on 587 the whole time since this is a Render-specific network restriction, not a Mailtrap or code issue. `SMTP_PORT` must be `2525` in Render's env vars for mail to actually send. Worth re-checking this constraint against whatever real SMTP provider eventually replaces Mailtrap (§1) — if it only offers 587/465, an HTTP-based email API may be needed instead of raw SMTP to route around Render's port blocking.
+
 ## 2. Forgot / reset password — make it real
 
 Phase 5 built the *UI* for this already (`ForgotPasswordPage`, `ResetPasswordPage`), deliberately non-functional, with the explicit plan to wire it up "later, alongside email verification." This is that moment.
