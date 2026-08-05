@@ -173,25 +173,39 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(400).send({ message: 'Only JPEG, PNG, and WebP images are allowed' });
             }
 
+            const extensionByMimeType: Record<string, string> = {
+                'image/jpeg': 'jpg',
+                'image/png': 'png',
+                'image/webp': 'webp',
+            };
+            const originalExtension = extensionByMimeType[file.mimetype];
+
             const buffer = await file.toBuffer();
 
             let resized: Buffer;
             try {
-                resized = await sharp(buffer).resize(1600, 1600, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 80 }).toBuffer();
+                resized = await sharp(buffer).resize(1600, 1600, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
             } catch {
                 return reply.status(400).send({ message: 'Invalid image file' });
             }
 
-            const filePath = `${request.user.sub}/${id}-${randomUUID()}.jpg`;
+            const uploadId = randomUUID();
+            const originalPath = `${request.user.sub}/${id}-original-${uploadId}.${originalExtension}`;
+            const webpPath = `${request.user.sub}/${id}-${uploadId}.webp`;
 
-            const { error: uploadError } = await supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!).upload(filePath, resized, { contentType: 'image/jpeg', upsert: true });
+            const bucket = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!);
 
-            if (uploadError) {
-                app.log.error(uploadError);
+            const [{ error: webpUploadError }, { error: originalUploadError }] = await Promise.all([
+                bucket.upload(webpPath, resized, { contentType: 'image/webp', upsert: true }),
+                bucket.upload(originalPath, buffer, { contentType: file.mimetype, upsert: true }),
+            ]);
+
+            if (webpUploadError || originalUploadError) {
+                app.log.error(webpUploadError ?? originalUploadError);
                 return reply.status(500).send({ message: 'Failed to upload image' });
             }
 
-            const { data: publicUrlData } = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!).getPublicUrl(filePath);
+            const { data: publicUrlData } = bucket.getPublicUrl(webpPath);
 
             const [updated] = await db.update(items).set({ imageUrl: publicUrlData.publicUrl, updatedAt: new Date() }).where(eq(items.id, id)).returning();
 
