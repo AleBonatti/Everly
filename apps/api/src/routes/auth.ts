@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { randomBytes } from 'node:crypto';
 import argon2 from 'argon2';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 import {
     registerInputSchema,
     loginInputSchema,
@@ -55,6 +55,26 @@ async function issueSession(reply: import('fastify').FastifyReply, userId: strin
 }
 
 export const authRoutes: FastifyPluginAsyncZod = async (app) => {
+    const VERIFICATION_RESEND_COOLDOWN_MS = 5 * 60 * 1000;
+
+    async function sendVerificationEmailIfNotRecentlySent(userId: string, email: string): Promise<boolean> {
+        const recentToken = await db.query.emailVerificationTokens.findFirst({
+            where: and(eq(emailVerificationTokens.userId, userId), gt(emailVerificationTokens.createdAt, new Date(Date.now() - VERIFICATION_RESEND_COOLDOWN_MS))),
+        });
+
+        if (recentToken) {
+            return false;
+        }
+
+        try {
+            await sendVerificationEmail(userId, email);
+            return true;
+        } catch (err) {
+            app.log.error(err, 'Failed to send verification email');
+            return false;
+        }
+    }
+
     app.post(
         '/register',
         {
@@ -126,6 +146,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             }
 
             if (!user.emailVerified) {
+                await sendVerificationEmailIfNotRecentlySent(user.id, user.email);
                 return reply.status(403).send({ message: 'Please verify your email before logging in' });
             }
 
@@ -256,11 +277,10 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             });
 
             if (user && !user.emailVerified) {
-                try {
-                    await sendVerificationEmail(user.id, user.email);
-                } catch (err) {
-                    app.log.error(err, 'Failed to send verification email');
-                }
+                const sent = await sendVerificationEmailIfNotRecentlySent(user.id, user.email);
+                return reply.send({
+                    message: sent ? 'Verification email sent — check your inbox.' : 'A verification email was already sent recently — check your inbox (and spam folder).',
+                });
             }
 
             return reply.send({ message: 'If that account needs verification, we have sent a new email.' });

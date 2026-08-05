@@ -77,14 +77,17 @@ export function LoginPage() {
                     <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg flex flex-col gap-1.5">
                         <span>{serverError}</span>
                         {unverifiedEmail && (
-                            <button
-                                type="button"
-                                onClick={() => resendMutation.mutate({ email: unverifiedEmail })}
-                                disabled={resendMutation.isPending || resendMutation.isSuccess}
-                                className="text-left underline disabled:no-underline disabled:opacity-70"
-                            >
-                                {resendMutation.isSuccess ? 'Verification email sent' : resendMutation.isPending ? 'Sending...' : 'Resend verification email'}
-                            </button>
+                            <>
+                                <span className="text-muted-foreground">A confirmation email has been sent to {unverifiedEmail}. Didn't get it?</span>
+                                <button
+                                    type="button"
+                                    onClick={() => resendMutation.mutate({ email: unverifiedEmail })}
+                                    disabled={resendMutation.isPending || resendMutation.isSuccess}
+                                    className="text-left underline disabled:no-underline disabled:opacity-70"
+                                >
+                                    {resendMutation.isSuccess ? 'Verification email sent' : resendMutation.isPending ? 'Sending...' : 'Send it again'}
+                                </button>
+                            </>
                         )}
                     </div>
                 )}
