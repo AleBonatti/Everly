@@ -25,6 +25,7 @@ export function UserSettingsPage() {
     const { data: user } = useCurrentUser();
 
     const [profileServerError, setProfileServerError] = useState('');
+    const [profileDone, setProfileDone] = useState(false);
     const [passwordServerError, setPasswordServerError] = useState('');
     const [passwordDone, setPasswordDone] = useState(false);
 
@@ -42,6 +43,8 @@ export function UserSettingsPage() {
         onSuccess: (updatedUser) => {
             queryClient.setQueryData(['me'], updatedUser);
             setProfileServerError('');
+            setProfileDone(true);
+            setTimeout(() => setProfileDone(false), 3500);
         },
         onError: (error) => {
             setProfileServerError(error instanceof ApiError ? error.message : 'Something went wrong');
@@ -62,6 +65,7 @@ export function UserSettingsPage() {
         onSuccess: () => {
             setPasswordServerError('');
             setPasswordDone(true);
+            setTimeout(() => setPasswordDone(false), 3500);
             resetPasswordForm();
         },
         onError: (error) => {
@@ -86,6 +90,7 @@ export function UserSettingsPage() {
                         <TextField label="Email" value={user?.email ?? ''} disabled />
 
                         {profileServerError && <div className="text-xs text-destructive bg-destructive-bg border border-destructive-border px-3 py-2 rounded-lg">{profileServerError}</div>}
+                        {profileDone && <div className="text-xs text-success bg-success-bg px-3 py-2 rounded-lg">Profile updated successfully.</div>}
 
                         <Button type="submit" isLoading={profileMutation.isPending}>
                             {profileMutation.isPending ? 'Saving...' : 'Save changes'}
