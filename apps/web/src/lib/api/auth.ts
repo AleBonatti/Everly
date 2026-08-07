@@ -7,6 +7,8 @@ import {
     type ResetPasswordInput,
     type VerifyEmailInput,
     type ResendVerificationInput,
+    type UpdateProfileInput,
+    type ChangePasswordInput,
 } from '@everly/shared';
 
 import { request } from '../api-client';
@@ -55,6 +57,20 @@ export function resendVerification(input: ResendVerificationInput) {
 
 export function getMe() {
     return request('/auth/me', authUserSchema);
+}
+
+export function updateProfile(input: UpdateProfileInput) {
+    return request('/auth/me', authUserSchema, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+    });
+}
+
+export function changePassword(input: ChangePasswordInput) {
+    return request('/auth/change-password', errorResponseSchema, {
+        method: 'POST',
+        body: JSON.stringify(input),
+    });
 }
 
 export function logout() {

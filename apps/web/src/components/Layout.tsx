@@ -48,9 +48,11 @@ export function Layout() {
                     </button>
 
                     {menuOpen && (
-                        <div className="absolute right-0 top-[calc(100%+8px)] w-[200px] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden z-20">
-                            <div className="px-4 py-3 text-sm cursor-pointer hover:bg-surface-inset">User settings</div>
-                            <div className="px-4 py-3 text-sm cursor-pointer hover:bg-surface-inset">System settings</div>
+                        <div className="absolute right-0 top-[calc(100%+8px)] w-50 bg-surface border border-border rounded-lg shadow-2xl overflow-hidden z-20">
+                            <Link to="/settings" className="block px-4 py-3 text-sm hover:bg-surface-inset" onClick={() => setMenuOpen(false)}>
+                                User settings
+                            </Link>
+                            {/* <div className="px-4 py-3 text-sm cursor-pointer hover:bg-surface-inset">System settings</div> */}
                             <Link to="/categories" className="block px-4 py-3 text-sm hover:bg-surface-inset" onClick={() => setMenuOpen(false)}>
                                 Edit categories
                             </Link>

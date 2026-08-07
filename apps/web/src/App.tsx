@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ItemsPage } from './pages/ItemsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
+import { UserSettingsPage } from './pages/UserSettingsPage';
 import { AuthLayout } from './components/AuthLayout';
 import { Layout } from './components/Layout';
 
@@ -28,6 +29,7 @@ export function App() {
                 <Route element={<Layout />}>
                     <Route path="/" element={<ItemsPage />} />
                     <Route path="/categories" element={<CategoriesPage />} />
+                    <Route path="/settings" element={<UserSettingsPage />} />
                 </Route>
             </Route>
         </Routes>

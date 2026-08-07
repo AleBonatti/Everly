@@ -11,6 +11,8 @@ import {
     resetPasswordInputSchema,
     verifyEmailInputSchema,
     resendVerificationInputSchema,
+    updateProfileInputSchema,
+    changePasswordInputSchema,
 } from '@everly/shared';
 import { db } from '../db/index.js';
 import { users, categories, passwordResetTokens, emailVerificationTokens } from '../db/schema.js';
@@ -303,6 +305,56 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             }
 
             return reply.send({ id: user.id, name: user.name, email: user.email });
+        },
+    );
+
+    app.patch(
+        '/me',
+        {
+            preHandler: [app.authenticate],
+            schema: {
+                body: updateProfileInputSchema,
+                response: { 200: authUserSchema, 401: errorResponseSchema },
+            },
+        },
+        async (request, reply) => {
+            const { name } = request.body;
+
+            const [updated] = await db.update(users).set({ name }).where(eq(users.id, request.user.sub)).returning();
+
+            if (!updated) {
+                throw new Error('Failed to update user');
+            }
+
+            return reply.send({ id: updated.id, name: updated.name, email: updated.email });
+        },
+    );
+
+    app.post(
+        '/change-password',
+        {
+            preHandler: [app.authenticate],
+            schema: {
+                body: changePasswordInputSchema,
+                response: { 200: errorResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema },
+            },
+        },
+        async (request, reply) => {
+            const { currentPassword, password } = request.body;
+
+            const user = await db.query.users.findFirst({
+                where: eq(users.id, request.user.sub),
+            });
+
+            if (!user || !(await argon2.verify(user.passwordHash, currentPassword))) {
+                return reply.status(400).send({ message: 'Current password is incorrect' });
+            }
+
+            const passwordHash = await argon2.hash(password);
+
+            await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+
+            return reply.send({ message: 'Password updated successfully' });
         },
     );
 

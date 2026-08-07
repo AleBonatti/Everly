@@ -23,6 +23,8 @@ export const authUserSchema = z.object({
 
 export type AuthUser = z.infer<typeof authUserSchema>;
 
+// Email varie
+
 export const forgotPasswordInputSchema = z.object({
     email: z.email().toLowerCase(),
 });
@@ -47,3 +49,18 @@ export const resendVerificationInputSchema = z.object({
 });
 
 export type ResendVerificationInput = z.infer<typeof resendVerificationInputSchema>;
+
+// Profile update
+
+export const updateProfileInputSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
+
+export const changePasswordInputSchema = z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
