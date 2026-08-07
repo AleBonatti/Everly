@@ -44,7 +44,7 @@ export function UserSettingsPage() {
             queryClient.setQueryData(['me'], updatedUser);
             setProfileServerError('');
             setProfileDone(true);
-            setTimeout(() => setProfileDone(false), 3500);
+            setTimeout(() => setProfileDone(false), 3000);
         },
         onError: (error) => {
             setProfileServerError(error instanceof ApiError ? error.message : 'Something went wrong');
@@ -65,7 +65,7 @@ export function UserSettingsPage() {
         onSuccess: () => {
             setPasswordServerError('');
             setPasswordDone(true);
-            setTimeout(() => setPasswordDone(false), 3500);
+            setTimeout(() => setPasswordDone(false), 3000);
             resetPasswordForm();
         },
         onError: (error) => {
