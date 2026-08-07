@@ -34,7 +34,13 @@ Phase 5 built the *UI* for this already (`ForgotPasswordPage`, `ResetPasswordPag
 
 **Decided**: full lockout until verified — login is rejected outright for an unverified account, with a message directing the user to check their email or resend verification.
 
-## 4. Image upload — WebP conversion + temporary original-file comparison
+**Redesigned after initial build — done**: originally a blocked login just rejected with no side effect, requiring the user to click a separate "Resend verification email" button even for their very first attempt — confusing, since nothing had actually been sent yet to "resend." Changed so a blocked login **automatically** sends a fresh verification email server-side, no click needed; the frontend now shows "A confirmation email has been sent to `<email>`. Didn't get it? [Send it again]" immediately on the 403. Both the auto-send and the explicit button now go through one shared helper (`sendVerificationEmailIfNotRecentlySent`) with a 5-minute cooldown per user (checked against `emailVerificationTokens.createdAt`) so repeated failed logins or button-mashing can't spam an inbox. The cooldown-skip case returns an honest, distinct message ("already sent recently — check your inbox and spam folder") rather than silently claiming a new email went out — this is safe to say explicitly (not an enumeration leak) because it only ever fires for an account already proven to exist by that point in the flow.
+
+Two real bugs surfaced and fixed during this work: (1) `sendEmail`/`sendVerificationEmail` calls in `/register`, `/resend-verification`, and `/forgot-password` were originally uncaught — a real SMTP failure would 500 the whole request even though the DB write (account creation, token insert) had already committed, leaving a stuck account with no way to get a fresh email; now wrapped in try/catch, logged via `app.log.error`, with the response always returned regardless of send outcome. (2) The frontend's `verifyEmail()` API function (`apps/web/src/lib/api/auth.ts`) was validating a successful `/auth/verify-email` response against `errorResponseSchema` instead of `authUserSchema` — the backend worked correctly and the account was really activated, but the mismatched Zod schema threw on the success path, sending the user to a "Verification failed" screen despite everything having worked. One-line fix; worth remembering as a class of bug (right schema *imported*, wrong schema *bound to the call*) that no amount of backend debugging would have found.
+
+**Also found**: Render's free tier blocks outbound SMTP on port 587 but allows 2525 — see §1's production gotcha note, which is where this actually needed fixing (an env var, not application code).
+
+## 4. Image upload — WebP conversion + temporary original-file comparison — done
 
 Current pipeline: `sharp` resizes and converts to JPEG at quality 80. Change the output format:
 ```ts
@@ -43,6 +49,8 @@ sharp(buffer).resize(...).webp({ quality: ... })
 WebP is a straightforward, well-supported `sharp` output format — better compression-to-quality ratio than JPEG, and a reasonable modern default to learn.
 
 **Storing the original alongside it**: upload both the original buffer and the converted WebP to Supabase Storage under a clear naming convention (e.g. `original-<id>.<ext>` vs `<id>.webp`), viewable directly via the Supabase dashboard for manual comparison. Recommend **not** adding a DB column or any UI for this — you explicitly said it's temporary/for comparison only, and a schema change for a debugging-only feature is churn worth avoiding. Storage usage temporarily doubles per upload; acceptable given it's explicitly short-lived. When you're done comparing, this is a one-line revert (remove the original upload call) with no schema cleanup needed.
+
+**Built in `apps/api/src/routes/items.ts`'s `POST /:id/image` handler**: extension for the original is looked up from the already-validated `file.mimetype` (not trusted from any client-supplied filename); both paths share one `randomUUID()` so they're visibly paired in the storage dashboard (`<userId>/<itemId>-original-<uuid>.<ext>` and `<userId>/<itemId>-<uuid>.webp`); both uploads run in parallel via `Promise.all` and fail the request (500) if either errors. Only the webp path's public URL is written to `items.imageUrl` — the original is upload-only, never referenced anywhere else in the app, exactly as scoped.
 
 ## 5. Search — debounce + loading indicator
 
@@ -67,11 +75,17 @@ Added a nullable `notes` text column, same category of change as `importance`/`i
 
 **Decided**: from a DB standpoint they're identical (both plain text) — the distinction is purely about where/how each is shown. `description` is shown in the grid/list view. `notes` is extra free text the user can add separately, editable only in the item modal — e.g. jotted down once an item is marked done. `ItemCard` intentionally does not display `notes`.
 
-## 8. "User settings" — make the link real
+## 8. "User settings" — make the link real — done
 
 Currently an inert placeholder in the avatar menu since Phase 5. **Decided — two sections**:
 1. **Update profile data**: name only for this initial phase (room to add more fields later). Email is shown but locked/disabled — not editable here.
 2. **Update password**: change password while logged in, requiring the current password as confirmation — distinct from the forgot-password flow in §2, which instead uses an emailed token and doesn't require knowing the old password.
+
+**Built as two separate backend endpoints** rather than one combined route: `PATCH /auth/me` (name only, returns the same `authUserSchema` shape as login/register so it slots directly into the existing `queryClient.setQueryData(['me'], ...)` cache-update pattern) and `POST /auth/change-password` (requires `currentPassword`, verified via `argon2.verify` against the stored hash before accepting the new one). Both are authenticated per-route via `preHandler: [app.authenticate]`, matching the existing `GET /me` convention in `auth.ts` rather than the file-wide `addHook` style used in `items.ts`/`categories.ts`.
+
+**Decided**: password change keeps the current session active (no forced re-login) — the user already proved they know the current password in the same request, so there's no real security gain from also invalidating the session.
+
+**Frontend**: one new `UserSettingsPage` with two independent forms (separate `useForm`/`useMutation` pairs), reusing `ResetPasswordPage`'s schema-extend-with-confirm-field pattern for the new-password/confirm fields. Each form shows its own success/error banner; success messages auto-dismiss after ~3.5s via `setTimeout` (a plain timer, not a `watch()`-based "clear on next edit" — that approach was tried first and had two real bugs: it fired on programmatic field syncs like the `values` binding and `reset()` calls, not just genuine user typing, causing the password success message to self-cancel in the same tick it appeared).
 
 ## 9. AI integration — auto-fetch item info
 
@@ -115,5 +129,6 @@ Given the shared dependencies above, roughly:
 5. ~~Search debounce + spinner (§5)~~ — done
 6. ~~Notes field (§7)~~ — done
 7. ~~Map improvements (§6)~~ — done
-8. User settings (§8) — benefits from password-change infra already built in step 3
-9. AI integration (§9) — **on hold**, revisit after the above ships
+8. ~~User settings (§8)~~ — done
+9. ~~Image upload — WebP + temporary original-file comparison (§4)~~ — done
+10. AI integration (§9) — **on hold**, only remaining item, revisit whenever
