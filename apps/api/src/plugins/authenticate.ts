@@ -18,6 +18,13 @@ export default fp(async (app: FastifyInstance) => {
     app.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             await request.jwtVerify();
+            return;
+        } catch {
+            // fall through to cookie attempt below
+        }
+
+        try {
+            await request.jwtVerify({ onlyCookie: true });
         } catch {
             reply.status(401).send({ message: 'Unauthorized' });
         }
