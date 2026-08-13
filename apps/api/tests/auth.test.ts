@@ -64,6 +64,69 @@ describe('auth', () => {
         await app.close();
     });
 
+    it('omits the token field from the response body for a plain web login', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'webtoken@example.com', password: 'supersecret123' });
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/auth/login',
+            payload: { email: 'webtoken@example.com', password: 'supersecret123' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).not.toHaveProperty('token');
+
+        await app.close();
+    });
+
+    it('includes a token in the response body when X-Client: mobile is sent', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'mobiletoken@example.com', password: 'supersecret123' });
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/auth/login',
+            headers: { 'x-client': 'mobile' },
+            payload: { email: 'mobiletoken@example.com', password: 'supersecret123' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(typeof response.json().token).toBe('string');
+
+        await app.close();
+    });
+
+    it('authenticates a protected route using only an Authorization bearer token, no cookie', async () => {
+        const app = createTestApp();
+        await app.ready();
+
+        await registerAndLogin(app, { email: 'bearer@example.com', password: 'supersecret123' });
+
+        const login = await app.inject({
+            method: 'POST',
+            url: '/auth/login',
+            headers: { 'x-client': 'mobile' },
+            payload: { email: 'bearer@example.com', password: 'supersecret123' },
+        });
+        const { token } = login.json();
+
+        const response = await app.inject({
+            method: 'GET',
+            url: '/auth/me',
+            headers: { authorization: `Bearer ${token}` },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().email).toBe('bearer@example.com');
+
+        await app.close();
+    });
+
     it('rejects login with the wrong password, and a non-existent email, identically', async () => {
         const app = createTestApp();
         await app.ready();

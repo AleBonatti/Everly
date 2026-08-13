@@ -6,6 +6,7 @@ import {
     registerInputSchema,
     loginInputSchema,
     authUserSchema,
+    authUserWithTokenSchema,
     errorResponseSchema,
     forgotPasswordInputSchema,
     resetPasswordInputSchema,
@@ -48,12 +49,15 @@ async function sendVerificationEmail(userId: string, email: string) {
 
 async function issueSession(reply: import('fastify').FastifyReply, userId: string) {
     const token = await reply.jwtSign({ sub: userId }, { expiresIn: '7d' });
+
     reply.setCookie('token', token, {
         httpOnly: true,
         secure: isProduction(),
         sameSite: isProduction() ? 'none' : 'lax',
         path: '/',
     });
+
+    return token;
 }
 
 export const authRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -132,7 +136,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         {
             schema: {
                 body: loginInputSchema,
-                response: { 200: authUserSchema, 401: errorResponseSchema, 403: errorResponseSchema },
+                response: { 200: authUserWithTokenSchema, 401: errorResponseSchema, 403: errorResponseSchema },
             },
         },
 
@@ -152,9 +156,15 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(403).send({ message: 'Please verify your email before logging in' });
             }
 
-            await issueSession(reply, user.id);
+            const token = await issueSession(reply, user.id);
+            const isMobile = request.headers['x-client'] === 'mobile';
 
-            return reply.send({ id: user.id, name: user.name, email: user.email });
+            return reply.send({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                ...(isMobile && { token }),
+            });
         },
     );
 
@@ -230,7 +240,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         {
             schema: {
                 body: verifyEmailInputSchema,
-                response: { 200: authUserSchema, 400: errorResponseSchema },
+                response: { 200: authUserWithTokenSchema, 400: errorResponseSchema },
             },
         },
         async (request, reply) => {
@@ -257,9 +267,15 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(400).send({ message: 'Invalid or expired token' });
             }
 
-            await issueSession(reply, user.id);
+            const sessionToken = await issueSession(reply, user.id);
+            const isMobile = request.headers['x-client'] === 'mobile';
 
-            return reply.send({ id: user.id, name: user.name, email: user.email });
+            return reply.send({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                ...(isMobile && { token: sessionToken }),
+            });
         },
     );
 
