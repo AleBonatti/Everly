@@ -74,9 +74,9 @@ React Native has no DOM, so React Router doesn't apply. The standard library is 
 - `@tanstack/react-query` (same library already used on web — data-fetching/caching patterns transfer directly)
 - `react-hook-form` + `zod` (same as web, and directly reuses `packages/shared` schemas)
 - `expo-secure-store` (secure token storage — see §5)
-- `react-native-maps` (native map component — see §7 for why this replaces Leaflet)
 - `expo-image-picker` (camera/gallery access for item photos)
-- `expo-location` (device geolocation)
+
+**Deferred, not needed for v1** (revised 2026-08-14 — see §7's location note): `react-native-maps` (interactive map picker) and `expo-location` (device GPS) were both in the original dependency list, but v1's location field is address-search-via-Nominatim only, matching desktop — a plain HTTP fetch, no native map or GPS library required. Add both back to this list whenever the v1.1 interactive map picker is actually scoped.
 
 ---
 
@@ -198,14 +198,27 @@ This is the one genuinely new piece of infrastructure, and it's specific to mobi
 - **Items — create**: add a new item with title, description, category, and a photo via `expo-image-picker` (camera or gallery). This is the single feature most worth building on mobile specifically, since camera-first item capture is where mobile genuinely beats web.
 - **Items — update (partial)**: mark done / restore (the archive toggle) — small, high-value, low-complexity. Full edit-everything screen can wait.
 - **Items — delete**: with the same confirm-dialog pattern as web.
-- **Location**: capture location via `expo-location` on create (device GPS "use my current location"), and show it read-only (e.g. a static map snippet or coordinates) on the item detail view. **Defer the interactive drag-to-adjust map picker** (`react-native-maps`) to a post-MVP pass — GPS-only location capture is a real, complete feature on its own and avoids taking on `react-native-maps` (a heavier, more native-code-adjacent dependency) inside the very first mobile milestone.
+- **Importance**: 1–5 dot selector on the item-edit screen, matching the existing `items.importance` API field. **Added to MVP scope 2026-08-14** (originally left undecided during initial planning) — small, self-contained, and reuses a field the API already has, so no backend change needed.
+- **Location — decided 2026-08-14, revised from the original GPS-capture-only plan**: matches desktop exactly — a text field that searches/geocodes via Nominatim (the same service and behavior as web's `apps/web/src/lib/api/geocoding.ts`), not a GPS "use my current location" button. **Still explicitly excluding the interactive drag-to-place map** (`react-native-maps`) from v1 — the address-search field alone geocodes to coordinates on submit, without needing a map component rendered at all. This keeps the original reasoning intact (avoid `react-native-maps`, a heavier native-code-adjacent dependency, in the first milestone) while matching desktop's actual input pattern (search box, not device GPS) rather than the GPS-first approach originally assumed during planning before the real desktop behavior was cross-checked against the design mockups.
 - **Notes field**: skip for v1 — it's a secondary field even on web (`ItemCard` doesn't show it), not worth mobile screen real estate this early.
 
 **Explicitly out of scope for v1** (candidates for a v1.1 once the MVP is store-published and validated):
 
-- Search, the interactive map/location picker, in-app settings/password-change, forgot-password, email verification, push notifications, offline support, deep linking.
+- Search (item list), the interactive map/location picker, grid view + sort menu, the archived-items filter switch, a dedicated categories management screen (list/add/edit/delete categories — mobile v1 only lets you *select* an existing category when creating/editing an item), in-app settings/password-change, forgot-password, email verification, push notifications, offline support, deep linking.
 
-This keeps the MVP's novel-surface list focused: Expo Router navigation, bearer-token auth + secure storage, TanStack Query against the real API, one real native-only capability (camera), and one real device-sensor capability (GPS) — enough to be a genuine, complete "installed on my phone and useful" app without trying to port all of web's Phase 1–9 scope at once.
+This keeps the MVP's novel-surface list focused: Expo Router navigation, bearer-token auth + secure storage, TanStack Query against the real API, and one real native-only capability (camera) — enough to be a genuine, complete "installed on my phone and useful" app without trying to port all of web's Phase 1–9 scope at once.
+
+### Mockup-to-MVP mapping — reviewed 2026-08-14
+
+Design mockups for mobile were reviewed at `../Everly bucket list app/` (one level above the repo root, same location as the existing desktop mockups referenced in `docs/PLANNING.md` §12): `Everly Mobile Auth.dc.html` (login/register/forgot/reset, iPhone-frame prototype) and `Everly Mobile.dc.html` (items list, item edit, categories management, category edit — all mobile-native layouts, not resized desktop). Also `everly-logo-dark.png` — the same logo asset, to be used first on mobile, then rolled out to desktop web too as a later, separate change.
+
+The mockups define the **full eventual app**, broader than the MVP scoped above — expected, since they're the design source of truth for everything, not phase-scoped. Mapping what actually gets built in v1 vs. deferred to v1.1:
+
+**Build for v1** (from `Everly Mobile Auth.dc.html`): login screen, register screen only. The other four auth views in that file's state machine (forgot password, reset-link-sent, set-new-password, password-updated) exist in the mockup but must not be wired up yet — no "Forgot password?" link target — since forgot/reset-password is explicitly out of MVP scope (§7).
+
+**Build for v1** (from `Everly Mobile.dc.html`): items list in **list mode only** (no grid mode, no list/grid toggle, no sort menu); a simple category-chip filter row (not the full bottom-sheet filter modal with multi-select + archived switch); item create/edit screen with title, description, real photo picker (`expo-image-picker`, replacing the mockup's placeholder), category chips (select-only, populated from the API — no add/edit/delete of categories from mobile), importance dots (1–5), an address-search text field that geocodes via Nominatim (no map rendered — see §7's location note), and delete-when-editing; mark done / restore action on item cards; logout via the avatar menu.
+
+**Deferred to v1.1** (present in the mockup, not built now): free-text search bar, grid view + sort menu, the filter modal's multi-select categories and "show archived" switch, infinite scroll, the entire categories management screen (list/add/edit/delete categories — mockup's dedicated `categories` screen and `categoryEdit` screen), the interactive tap-to-drop-pin map, forgot/reset-password (all four related auth views).
 
 ---
 
@@ -213,9 +226,9 @@ This keeps the MVP's novel-surface list focused: Expo Router navigation, bearer-
 
 Not a full feature spec — just flagging where a web concept doesn't port 1:1 and needs a different implementation, so scoping doesn't assume a straight copy:
 
-- **Maps**: deferred past v1 per §7 — `react-native-maps` only becomes relevant once the interactive location picker is built post-MVP. Nominatim geocoding (§6 of the roadmap doc) is a plain HTTP API and would work unchanged from RN whenever that lands.
+- **Maps**: the interactive drag-to-place map (`react-native-maps`) is deferred past v1 per §7 — only becomes relevant once that picker is built post-MVP.
 - **Image upload**: `expo-image-picker` replaces the web `<input type="file">` / drag-drop. It gives camera **or** gallery choice natively — arguably a better UX than web here, worth leaning into (a phone's camera is a first-class input the web app never had). In scope for v1.
-- **Geolocation**: `expo-location` replaces the browser Geolocation API used for the web app's "use my location" feature — conceptually identical, different permission-prompt mechanics (iOS/Android permission dialogs vs. browser permission prompts). In scope for v1 as GPS-capture-only (see §7).
+- **Location — revised 2026-08-14**: matches desktop, not the browser Geolocation API. The v1 item-edit screen has an address-search text field that calls Nominatim (the same free geocoding service web already uses, `apps/web/src/lib/api/geocoding.ts`) — a plain HTTP fetch, works unchanged from RN with no new library needed. `expo-location` (device GPS) is **not** used in v1 — that was the original plan during initial mobile scoping, revised once the desktop behavior was actually cross-checked against the design mockups and found to be search-based, not GPS-based.
 - **Forms**: `react-hook-form` + `zod` work in RN, but form *inputs* differ — no native browser `<input>`/`<select>`; RN's `TextInput` and community picker components stand in.
 - **Routing/deep links**: out of scope for v1 (§7) — the password-reset flow isn't in the mobile MVP at all, so this only becomes relevant in a later pass.
 - **Auth**: see §5 — the biggest non-cosmetic difference.
@@ -239,7 +252,7 @@ Revised against the answered questions above: iOS-first *testing* (not iOS-only 
 2. **Expo project scaffold** — `apps/mobile`, Expo Router shell, NativeWind configured, `@everly/shared` wired in as a workspace dependency. Confirm it runs in Expo Go on a physical iPhone; sanity-check it also boots in the Android emulator before going further, so a platform-breaking mistake is caught on day one rather than at the end.
 3. **Auth screens** — login/register/logout only (no forgot-password, no email verification — out of MVP scope per §7) against the real API, token stored in `expo-secure-store`, confirm a session persists across app restarts, and confirm an expired/invalid token correctly redirects to the login screen rather than erroring silently (this is the re-login-on-expiry behavior from §5/§9.3 — worth proving deliberately, not just assuming it works).
 4. **Items list (read-only)** — logged-in user's items with basic category filter (no search — §7). First real data screen, proves TanStack Query + shared Zod schemas work end-to-end from RN.
-5. **Item create** — title, description, category, photo via `expo-image-picker`, GPS location via `expo-location` (capture-only, no map picker — §7). The MVP's core "why build this on mobile" feature.
+5. **Item create** — title, description, category, importance dots, photo via `expo-image-picker`, address-search location field via Nominatim (no map picker — §7). The MVP's core "why build this on mobile" feature.
 6. **Item update/delete (partial)** — mark done / restore toggle, delete with confirm dialog. Full multi-field edit screen is not required for v1 (§7).
 7. **iPhone-driven manual QA pass** — since iOS is the primary device on hand, do a real device pass here across all iOS versions available (14 through latest) before moving to Android, catching real bugs while the feature set is still small.
 8. **Android emulator pass** — same feature set, Android Studio emulator (no physical device available per §9.1). Flag anything that needs verification on a real Android device later, rather than assuming emulator parity is sufficient for store submission.
