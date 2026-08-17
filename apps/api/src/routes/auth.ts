@@ -86,7 +86,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         {
             schema: {
                 body: registerInputSchema,
-                response: { 201: authUserSchema, 409: errorResponseSchema },
+                response: { 201: authUserWithTokenSchema, 409: errorResponseSchema },
             },
         },
 
@@ -127,7 +127,15 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 app.log.error(err, 'Failed to send verification email');
             }
 
-            return reply.status(201).send({ id: user.id, name: user.name, email: user.email });
+            const isMobile = request.headers['x-client'] === 'mobile';
+            const token = isMobile ? await issueSession(reply, user.id) : undefined;
+
+            return reply.status(201).send({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                ...(isMobile && { token }),
+            });
         },
     );
 
@@ -142,6 +150,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
 
         async (request, reply) => {
             const { email, password } = request.body;
+            const isMobile = request.headers['x-client'] === 'mobile';
 
             const user = await db.query.users.findFirst({
                 where: eq(users.email, email),
@@ -151,13 +160,12 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(401).send({ message: 'Invalid email or password' });
             }
 
-            if (!user.emailVerified) {
+            if (!isMobile && !user.emailVerified) {
                 await sendVerificationEmailIfNotRecentlySent(user.id, user.email);
                 return reply.status(403).send({ message: 'Please verify your email before logging in' });
             }
 
             const token = await issueSession(reply, user.id);
-            const isMobile = request.headers['x-client'] === 'mobile';
 
             return reply.send({
                 id: user.id,

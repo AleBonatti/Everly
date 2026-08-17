@@ -16,24 +16,35 @@ This doc is written for someone with zero native app experience but strong TS/Re
 
 ## 1. Where does the code live?
 
-**Decision: same monorepo, new sibling app — `apps/mobile`.**
+**Decision reversed 2026-08-17 — separate repo, not a monorepo sibling.** The original 2026-08-10 decision (below, kept for the record) was `apps/mobile` inside this monorepo. That was abandoned after a full day of hands-on debugging proved the monorepo's dependency hoisting to be a real, structural, unresolvable-without-workarounds problem for this specific pairing — not a one-off misconfiguration.
 
-```
-everly/
-  apps/
-    web/       (existing)
-    api/       (existing)
-    mobile/    (new)
-  packages/
-    shared/    (existing — reused by mobile)
-```
+### What actually went wrong
 
-### Why not a separate repo?
+`apps/web` requires `react@^19.2.7`; `react-native@0.81.5` (required by Expo SDK 54, the version this project is pinned to per §2) requires an **exact-match** `react@19.1.0` — React Native enforces at runtime that `react` and its own bundled `react-native-renderer` are the identical version, not just compatible-range. npm workspaces hoists shared dependencies to one root `node_modules`; when two workspaces need genuinely incompatible exact versions of the same package, npm nests the divergent copy correctly, but Metro (Expo's bundler) does not reliably respect that nesting boundary for every package in a deep dependency graph — some of React Native's own internal imports resolved against the *hoisted* `19.2.7` copy instead of mobile's local `19.1.0`, causing a hard runtime crash (`Incompatible React versions: react and react-native-renderer must have the exact same version`).
+
+Things tried and rejected, in order, each for a real reason:
+- **Root-level `package.json` `overrides` forcing one version everywhere** — the documented, Expo-recommended fix for this exact symptom. Rejected because it requires either downgrading web (re-testing an already-working app for no product reason) or upgrading mobile past what SDK 54/RN 0.81.5 actually support (not possible, it's an exact pin).
+- **Metro-level `resolver.extraNodeModules` override, scoped to `apps/mobile` only** — a real, targeted fix that would have worked without touching web at all. Rejected anyway on user's explicit call: constraints set 2026-08-17 were "no workarounds to make things work, rely on latest/stable versions for each tool, web must not be touched" — a resolver override is definitionally a workaround, not a naturally consistent dependency tree, and would remain a permanent, fragile pin at risk of silently breaking on a future `npm install` if hoisting shifted again.
+
+### The actual fix: remove the shared-hoisting precondition entirely
+
+A separate repo means `apps/mobile` gets its own fully independent `node_modules` tree, with **zero** possible interaction with `apps/web`/`apps/api`'s dependencies — not "configured to avoid conflict," genuinely only one `node_modules` tree exists for Metro to ever look at. This isn't a workaround; it removes the actual precondition (shared hoisting) that caused the bug, satisfying "no workarounds" better than any monorepo-side fix could.
+
+### The known, accepted cost
+
+`packages/shared`'s Zod schemas (`auth`, `items`, `categories`, `common` — the API's request/response contracts) can no longer be filesystem-shared via npm workspaces. Mobile needs its own copy of these types. **Decided**: hand-maintain a duplicate copy of the relevant schemas inside the new mobile repo for now (small surface area — a handful of Zod schemas, not a large codebase), accepting manual drift risk as a real, known tradeoff rather than solving it preemptively with a published package (real infra overhead, not worth it before the mobile app even has a single working screen). Revisit only if drift actually causes a bug in practice.
+
+### Original 2026-08-10 decision, superseded — kept for context
+
+<details>
+<summary>Why a monorepo sibling was chosen originally (superseded 2026-08-17)</summary>
 
 - `packages/shared` already holds the Zod schemas for `auth`, `items`, `categories`, `common` — these are the request/response contracts with the API. A mobile app hitting the same API needs the *exact same* contracts. In the same npm workspace, mobile just adds `"@everly/shared": "*"` as a dependency, same as `apps/web` and `apps/api` already do. In a separate repo, you'd either duplicate these types (drift risk — the whole reason `packages/shared` exists) or publish it as a versioned package, which is real infrastructure overhead for a learning project.
 - One `git log`, one PR history, one place to reason about a full-stack change (e.g. adding a field to `items` touches API + shared + web + mobile in one commit instead of four coordinated repos).
 - The root `package.json` already declares `"workspaces": ["apps/*", "packages/*"]` — `apps/mobile` is picked up with zero config changes.
-- Downsides are minor at this scale: mobile's dependency tree (React Native, Expo, native tooling) is large and unrelated to web/api's, but npm workspaces isolate `node_modules` resolution per-package well enough that this isn't a real problem. If the repo ever felt genuinely too heavy, splitting later is still possible — this isn't a one-way door.
+- Downsides were assumed minor at this scale — turned out not to be, per above.
+
+</details>
 
 ### What mobile will *not* share with web
 
@@ -42,7 +53,7 @@ React Native does not render HTML/CSS or run in a browser DOM, so nothing UI-lev
 - No React Router (React Native uses a completely different navigation model — see §2).
 - No shared build tooling (Vite is a web bundler; RN apps ship via Metro, Expo's bundler).
 
-What **is** shared: `packages/shared`'s Zod schemas and TS types, and conceptually the API client pattern (though the actual HTTP client code will differ — see §5).
+**Nothing is filesystem-shared with web at all**, per the §1 decision reversal — mobile is a separate repo now. The Zod schemas mobile needs (`auth`, `items`, `categories` shapes) are hand-copied into the mobile repo rather than imported from `packages/shared`; conceptually the same contracts, just duplicated rather than linked. The API client *pattern* (TanStack Query, a thin fetch wrapper) is still worth mirroring for consistency, but the actual code is independent.
 
 ---
 
@@ -72,7 +83,7 @@ React Native has no DOM, so React Router doesn't apply. The standard library is 
 - `expo` + `expo-router` (app shell, navigation)
 - `nativewind` — **confirmed 2026-08-10, used from the start rather than added later.** Worth being honest about the tradeoff being accepted: NativeWind only reuses Tailwind's *class-name syntax* — RN's underlying layout model is still fundamentally different from CSS (Flexbox-only, no grid, no cascade/inheritance for most properties, `View`/`Text`/`ScrollView` instead of `div`/`span`, every element defaults to `flex` layout) and has to be learned regardless of which styling API sits on top of it. NativeWind also adds one more moving part (a babel plugin + class-to-style compiler, with its own version-compatibility surface against new Expo SDK releases) on top of the newest, least-familiar part of the stack. The case for taking it on anyway: avoiding a mid-project migration (styling touches every screen, so switching later means rewriting everything already built) and one less unfamiliar syntax to context-switch into while everything else about RN is already new. Revisit only if NativeWind itself becomes a recurring source of confusing bugs — at that point plain `StyleSheet.create` is always available as a fallback for new components without needing to migrate what's already working.
 - `@tanstack/react-query` (same library already used on web — data-fetching/caching patterns transfer directly)
-- `react-hook-form` + `zod` (same as web, and directly reuses `packages/shared` schemas)
+- `react-hook-form` + `zod` (same as web; schemas are hand-copied from `packages/shared` per §1's separate-repo decision, not imported directly)
 - `expo-secure-store` (secure token storage — see §5)
 - `expo-image-picker` (camera/gallery access for item photos)
 
@@ -121,7 +132,7 @@ Layered the same way the web app's Phase 7 test suite was likely structured (uni
 
 ### CI
 
-Given CI/CD is an explicit learning goal for this whole project ([[user_background]]): the same GitHub Actions setup already running for `apps/web`/`apps/api` extends naturally — add a job that runs `npm run lint`/`typecheck`/`test` scoped to `apps/mobile` on PRs. **EAS Build** can also run from GitHub Actions (`eas build` in a workflow step) to produce installable builds automatically, which is the mobile equivalent of Vercel's preview-per-PR — worth treating as a stretch goal once the core app works, not a day-one requirement.
+Given CI/CD is an explicit learning goal for this whole project ([[user_background]]): mobile now being a separate repo (§1) means a **new, independent** GitHub Actions workflow, not an extension of `everly`'s existing one — same conceptual pattern (lint/typecheck/test on PRs), just its own `.github/workflows/` file in the new repo. **EAS Build** can also run from GitHub Actions (`eas build` in a workflow step) to produce installable builds automatically, which is the mobile equivalent of Vercel's preview-per-PR — worth treating as a stretch goal once the core app works, not a day-one requirement.
 
 ---
 
@@ -246,11 +257,11 @@ Not a full feature spec — just flagging where a web concept doesn't port 1:1 a
 
 ## Suggested build order
 
-Revised against the answered questions above: iOS-first *testing* (not iOS-only development — §3's parallel-codebase point still holds), the §7 MVP cut, re-login-only auth, and store publication as a real near-term milestone rather than a stretch goal.
+Revised 2026-08-17 for the separate-repo restart (§1). Steps 1 (API auth changes) stays as already-shipped, merged work in the `everly` repo — nothing about that changes. Everything from step 2 onward now happens in the **new, separate mobile repo**, starting genuinely clean rather than continuing on top of the abandoned monorepo scaffold.
 
-1. **Auth API changes** (§5) — additive bearer-token support in `apps/api`: login/register return the JWT in the response body alongside the existing cookie, `authenticate.ts` accepts either cookie or `Authorization: Bearer`. Testable via curl/Postman independent of mobile, before any mobile code exists.
-2. **Expo project scaffold** — `apps/mobile`, `@everly/shared` wired in as a workspace dependency. **Done and verified 2026-08-14**: confirmed booting in Expo Go on a physical iPhone, with Fast Refresh working (an `App.tsx` edit reflected live on the phone); `package.json` renamed to `@everly/mobile` with `@everly/shared` linked and a `typecheck` script added; root `eslint.config.js` excludes `apps/mobile`; `npm install` and `npm run typecheck` both confirmed clean. **Pinned to Expo SDK 54, not `@latest`** — scaffolding against the newest SDK (57 at the time) failed with `Project is incompatible with this version of Expo Go`. This is not ordinary lag: per [Expo's own May 2026 changelog post](https://expo.dev/changelog/expo-go-and-app-store-may-2026), Apple's App Store review has been stuck approving new Expo Go releases for months, so the public App Store build has been stalled at SDK 54 while Expo has since shipped SDK 55, 56, and 57 (June 30, 2026). Expo's documented policy is that Expo Go normally only supports the single latest SDK — this gap is a deviation caused by Apple's review bottleneck, not something wrong with this setup. Expo's own workaround for this exact situation is `eas go` (build a personal copy of Expo Go via TestFlight, bypassing the stalled public App Store build) — not used here, since it requires an Apple Developer account, which per §6 is deliberately not being set up yet. The working scaffold command was `npx create-expo-app@latest apps/mobile --template blank-typescript@sdk-54` (note the explicit `@sdk-54` on the **template**, not on `create-expo-app` itself). **Before any future re-scaffold or SDK upgrade**, check what SDK the installed Expo Go app currently reports supporting (visible in the app itself) and match the project's template version to it — don't assume `@latest` is safe while this App Store approval gap persists; re-check whether it's resolved before the next SDK bump. Android emulator boot check deliberately deferred, not required to close this step (no physical Android device available — see §9.1); pick up before the iPhone/Android QA passes (steps 7–8).
-3. **Router + styling setup, then auth screens.** Expo Router and NativeWind are not yet installed (moved here from step 2, which only produced the plain unstyled scaffold) — install and configure both first, confirm the app still boots in Expo Go after each addition (don't stack both changes before testing — if something breaks, you want to know which one caused it), then build login/register/logout screens (no forgot-password, no email verification — out of MVP scope per §7) against the real API, token stored in `expo-secure-store`, confirm a session persists across app restarts, and confirm an expired/invalid token correctly redirects to the login screen rather than erroring silently (this is the re-login-on-expiry behavior from §5/§9.3 — worth proving deliberately, not just assuming it works).
+1. **Auth API changes** (§5) — additive bearer-token support in `apps/api`: login/register return the JWT in the response body alongside the existing cookie, `authenticate.ts` accepts either cookie or `Authorization: Bearer`. **Done, merged to `main` in the `everly` repo.** Unaffected by the §1 repo split — the API stays in `everly`; only the mobile client moves out.
+2. **New repo + Expo scaffold.** Create the new standalone repo, scaffold Expo fresh (SDK 54, matching the currently-installed Expo Go build — see §6's note on the Apple App Store review lag before assuming `@latest` is safe), install Expo Router + NativeWind, hand-copy the needed Zod schemas from `packages/shared` (§1), confirm boot in Expo Go on a physical iPhone with Fast Refresh working. This repeats the work previously done (and then undone) in `apps/mobile` — expect it to go faster this time now that the underlying npm/Node version gotchas are known (see the standing-issues note in project memory) and there is no monorepo hoisting to fight.
+3. **Auth screens** — login/register/logout only (no forgot-password, no email verification — out of MVP scope per §7) against the real API, token stored in `expo-secure-store`, confirm a session persists across app restarts, and confirm an expired/invalid token correctly redirects to the login screen rather than erroring silently (this is the re-login-on-expiry behavior from §5/§9.3 — worth proving deliberately, not just assuming it works).
 4. **Items list (read-only)** — logged-in user's items with basic category filter (no search — §7). First real data screen, proves TanStack Query + shared Zod schemas work end-to-end from RN.
 5. **Item create** — title, description, category, importance dots, photo via `expo-image-picker`, address-search location field via Nominatim (no map picker — §7). The MVP's core "why build this on mobile" feature.
 6. **Item update/delete (partial)** — mark done / restore toggle, delete with confirm dialog. Full multi-field edit screen is not required for v1 (§7).
