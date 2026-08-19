@@ -139,6 +139,17 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(404).send({ message: 'Item not found' });
             }
 
+            if (deleted.imageUrl) {
+                const bucket = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!);
+                const path = deleted.imageUrl.split(`/${process.env.SUPABASE_STORAGE_BUCKET}/`)[1];
+                if (path) {
+                    const { error } = await bucket.remove([path]);
+                    if (error) {
+                        app.log.error(error, 'Failed to delete item image from storage');
+                    }
+                }
+            }
+
             return reply.send({ message: 'Item deleted' });
         },
     );
@@ -178,7 +189,6 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
                 'image/png': 'png',
                 'image/webp': 'webp',
             };
-            const originalExtension = extensionByMimeType[file.mimetype];
 
             const buffer = await file.toBuffer();
 
@@ -190,18 +200,14 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
             }
 
             const uploadId = randomUUID();
-            const originalPath = `${request.user.sub}/${id}-original-${uploadId}.${originalExtension}`;
             const webpPath = `${request.user.sub}/${id}-${uploadId}.webp`;
 
             const bucket = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!);
 
-            const [{ error: webpUploadError }, { error: originalUploadError }] = await Promise.all([
-                bucket.upload(webpPath, resized, { contentType: 'image/webp', upsert: true }),
-                bucket.upload(originalPath, buffer, { contentType: file.mimetype, upsert: true }),
-            ]);
+            const { error: webpUploadError } = await bucket.upload(webpPath, resized, { contentType: 'image/webp', upsert: true });
 
-            if (webpUploadError || originalUploadError) {
-                app.log.error(webpUploadError ?? originalUploadError);
+            if (webpUploadError) {
+                app.log.error(webpUploadError);
                 return reply.status(500).send({ message: 'Failed to upload image' });
             }
 
