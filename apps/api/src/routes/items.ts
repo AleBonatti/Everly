@@ -184,12 +184,6 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(400).send({ message: 'Only JPEG, PNG, and WebP images are allowed' });
             }
 
-            const extensionByMimeType: Record<string, string> = {
-                'image/jpeg': 'jpg',
-                'image/png': 'png',
-                'image/webp': 'webp',
-            };
-
             const buffer = await file.toBuffer();
 
             let resized: Buffer;
