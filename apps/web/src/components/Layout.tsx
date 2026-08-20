@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { logout } from '../lib/api/auth';
+import everlyLogo from '../assets/everly-logo-dark.png';
 
 function getInitials(name: string) {
     return name
@@ -32,11 +33,8 @@ export function Layout() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
-            <header className="flex items-center justify-between px-8 py-4 bg-surface border-b border-border">
-                <div className="flex items-baseline gap-3">
-                    <span className="text-2xl font-bold tracking-wide">Everly</span>
-                    <span className="text-xs text-muted-foreground italic">A list of things worth doing</span>
-                </div>
+            <header className="flex items-center justify-between px-8 py-2 bg-surface border-b border-border">
+                <img src={everlyLogo} alt="Everly" className="h-14 w-auto" />
 
                 <div ref={menuRef} className="relative">
                     <button onClick={() => setMenuOpen((open) => !open)} className="flex items-center gap-2.5 pl-1.5 pr-2.5 py-1.5 rounded-full bg-surface-inset cursor-pointer">
