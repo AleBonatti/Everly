@@ -11,6 +11,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { UserSettingsPage } from './pages/UserSettingsPage';
 import { AuthLayout } from './components/AuthLayout';
 import { Layout } from './components/Layout';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 
 export function App() {
     return (
@@ -32,6 +33,8 @@ export function App() {
                     <Route path="/settings" element={<UserSettingsPage />} />
                 </Route>
             </Route>
+
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
     );
 }
