@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router';
+import { useSearchParams, Link } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +19,6 @@ const resetPasswordFormSchema = resetPasswordInputSchema.extend({ confirmPasswor
 type ResetPasswordFormInput = z.infer<typeof resetPasswordFormSchema>;
 
 export function ResetPasswordPage() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token') ?? '';
     const [done, setDone] = useState(false);
@@ -60,9 +59,6 @@ export function ResetPasswordPage() {
                 <div className="w-13 h-13 rounded-full bg-success-bg flex items-center justify-center text-2xl text-success">✓</div>
                 <h1 className="text-lg text-foreground">Password updated</h1>
                 <p className="text-sm text-muted-foreground">You can now log in with your new password.</p>
-                <button onClick={() => navigate('/login')} className="w-full mt-2.5 bg-accent hover:bg-accent-hover text-accent-foreground font-semibold text-sm py-2.5 rounded-lg cursor-pointer">
-                    Go to log in
-                </button>
             </div>
         );
     }
