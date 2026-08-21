@@ -213,6 +213,16 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
                 throw new Error('Failed to update item with image URL');
             }
 
+            if (item.imageUrl && item.imageUrl !== updated.imageUrl) {
+                const oldPath = item.imageUrl.split(`/${process.env.SUPABASE_STORAGE_BUCKET}/`)[1];
+                if (oldPath) {
+                    const { error: removeError } = await bucket.remove([oldPath]);
+                    if (removeError) {
+                        app.log.error(removeError, 'Failed to delete previous item image from storage');
+                    }
+                }
+            }
+
             return reply.send(serializeItem(updated));
         },
     );
