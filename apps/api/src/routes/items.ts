@@ -188,7 +188,7 @@ export const itemsRoutes: FastifyPluginAsyncZod = async (app) => {
 
             let resized: Buffer;
             try {
-                resized = await sharp(buffer).resize(1600, 1600, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
+                resized = await sharp(buffer).rotate().resize(1600, 1600, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
             } catch {
                 return reply.status(400).send({ message: 'Invalid image file' });
             }
