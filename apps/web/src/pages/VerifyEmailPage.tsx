@@ -15,7 +15,7 @@ function verifyEmailOnce(token: string) {
     return promise;
 }
 
-type VerificationState = 'pending' | 'error';
+type VerificationState = 'pending' | 'success' | 'error';
 
 export function VerifyEmailPage() {
     const navigate = useNavigate();
@@ -33,10 +33,9 @@ export function VerifyEmailPage() {
         let cancelled = false;
 
         verifyEmailOnce(token)
-            .then((user) => {
+            .then(() => {
                 if (!cancelled) {
-                    queryClient.setQueryData(['me'], user);
-                    navigate('/');
+                    setState('success');
                 }
             })
             .catch((error: unknown) => {
@@ -53,7 +52,10 @@ export function VerifyEmailPage() {
 
     if (!token) {
         return (
-            <div className="flex flex-col items-center text-center gap-3.5 py-2">
+            <div
+                className="flex flex-type VerificationState = 'pending' | 'error';
+col items-center text-center gap-3.5 py-2"
+            >
                 <h1 className="text-lg text-foreground">Invalid link</h1>
                 <p className="text-sm text-muted-foreground">This verification link is missing its token.</p>
                 <Link to="/login" className="text-accent text-sm">
@@ -71,6 +73,16 @@ export function VerifyEmailPage() {
                 <Link to="/login" className="text-accent text-sm">
                     ← Back to log in
                 </Link>
+            </div>
+        );
+    }
+
+    if (state === 'success') {
+        return (
+            <div className="flex flex-col items-center text-center gap-3.5 py-2">
+                <div className="w-13 h-13 rounded-full bg-success-bg flex items-center justify-center text-2xl text-success">✓</div>
+                <h1 className="text-lg text-foreground">Email verified</h1>
+                <p className="text-sm text-muted-foreground">Your email has been verified. You can now log in.</p>
             </div>
         );
     }
