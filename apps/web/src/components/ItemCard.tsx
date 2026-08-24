@@ -15,7 +15,7 @@ export function ItemCard({ item, category, onEdit, onArchiveToggle }: ItemCardPr
             <button
                 type="button"
                 onClick={onEdit}
-                className="relative aspect-[4/3] flex items-center justify-center cursor-pointer overflow-hidden"
+                className="relative aspect-4/3 flex items-center justify-center cursor-pointer overflow-hidden"
                 style={
                     item.imageUrl
                         ? undefined
