@@ -134,6 +134,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                emailVerified: user.emailVerified,
                 ...(isMobile && { token }),
             });
         },
@@ -171,6 +172,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                emailVerified: user.emailVerified,
                 ...(isMobile && { token }),
             });
         },
@@ -282,6 +284,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                emailVerified: user.emailVerified,
                 ...(isMobile && { token: sessionToken }),
             });
         },
@@ -328,7 +331,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 return reply.status(401).send({ message: 'Unauthorized' });
             }
 
-            return reply.send({ id: user.id, name: user.name, email: user.email });
+            return reply.send({ id: user.id, name: user.name, email: user.email, emailVerified: user.emailVerified });
         },
     );
 
@@ -350,7 +353,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                 throw new Error('Failed to update user');
             }
 
-            return reply.send({ id: updated.id, name: updated.name, email: updated.email });
+            return reply.send({ id: updated.id, name: updated.name, email: updated.email, emailVerified: updated.emailVerified });
         },
     );
 

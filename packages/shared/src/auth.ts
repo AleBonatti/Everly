@@ -17,6 +17,7 @@ export const authUserSchema = z.object({
     id: z.uuid(),
     name: z.string(),
     email: z.email(),
+    emailVerified: z.boolean(),
 });
 export type AuthUser = z.infer<typeof authUserSchema>;
 
