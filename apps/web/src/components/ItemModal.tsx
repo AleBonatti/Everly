@@ -95,9 +95,9 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
 
     return (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-        <div onClick={onClose} className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-start justify-center p-10 z-[100] overflow-auto">
+        <div onClick={onClose} className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-start justify-center p-10 z-100 overflow-auto">
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-            <div onClick={(e) => e.stopPropagation()} className="bg-surface border border-border rounded-2xl w-full max-w-[620px] shadow-2xl">
+            <div onClick={(e) => e.stopPropagation()} className="bg-surface border border-border rounded-2xl w-full max-w-155 shadow-2xl">
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border">
                     <h2 className="text-lg text-foreground">{item ? 'Edit item' : 'Add a new item'}</h2>
                     <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-lg px-2 cursor-pointer">
@@ -111,7 +111,7 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="relative aspect-[16/7] rounded-lg overflow-hidden border border-dashed border-muted-foreground/40 cursor-pointer"
+                                className="relative aspect-16/7 rounded-lg overflow-hidden border border-dashed border-muted-foreground/40 cursor-pointer"
                                 style={{ backgroundColor: `${selectedCategory?.color ?? '#6b7280'}22` }}
                             >
                                 {previewUrl || item.imageUrl ? (
@@ -122,7 +122,7 @@ export function ItemModal({ item, categories, onClose, onSubmit, onDelete, isSub
                                 {uploadImage.isPending && <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white">Uploading...</span>}
                             </button>
                         ) : (
-                            <div className="aspect-[16/7] rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/40 bg-surface-inset">
+                            <div className="aspect-16/7 rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/40 bg-surface-inset">
                                 <span className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase text-center px-4">Save the item first to add a photo</span>
                             </div>
                         )}
