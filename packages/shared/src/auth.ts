@@ -63,3 +63,8 @@ export const changePasswordInputSchema = z.object({
     password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
+
+export const deleteAccountInputSchema = z.object({
+    password: z.string().min(1, 'Password is required'),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountInputSchema>;

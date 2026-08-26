@@ -9,6 +9,7 @@ import {
     type ResendVerificationInput,
     type UpdateProfileInput,
     type ChangePasswordInput,
+    type DeleteAccountInput,
 } from '@everly/shared';
 
 import { request } from '../api-client';
@@ -68,6 +69,13 @@ export function updateProfile(input: UpdateProfileInput) {
 
 export function changePassword(input: ChangePasswordInput) {
     return request('/auth/change-password', errorResponseSchema, {
+        method: 'POST',
+        body: JSON.stringify(input),
+    });
+}
+
+export function deleteAccount(input: DeleteAccountInput) {
+    return request('/auth/delete-account', errorResponseSchema, {
         method: 'POST',
         body: JSON.stringify(input),
     });

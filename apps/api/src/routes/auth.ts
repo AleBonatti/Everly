@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { randomBytes } from 'node:crypto';
 import argon2 from 'argon2';
 import { and, eq, gt } from 'drizzle-orm';
+import { supabase } from '../lib/supabase.js';
 import {
     registerInputSchema,
     loginInputSchema,
@@ -14,6 +15,7 @@ import {
     resendVerificationInputSchema,
     updateProfileInputSchema,
     changePasswordInputSchema,
+    deleteAccountInputSchema,
 } from '@everly/shared';
 import { db } from '../db/index.js';
 import { users, categories, passwordResetTokens, emailVerificationTokens } from '../db/schema.js';
@@ -382,6 +384,51 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
 
             return reply.send({ message: 'Password updated successfully' });
+        },
+    );
+
+    app.post(
+        '/delete-account',
+        {
+            preHandler: [app.authenticate],
+            schema: {
+                body: deleteAccountInputSchema,
+                response: { 200: errorResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema },
+            },
+        },
+        async (request, reply) => {
+            const { password } = request.body;
+
+            const user = await db.query.users.findFirst({
+                where: eq(users.id, request.user.sub),
+            });
+
+            if (!user || !(await argon2.verify(user.passwordHash, password))) {
+                return reply.status(400).send({ message: 'Password is incorrect' });
+            }
+
+            const bucket = supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET!);
+            const { data: files, error: listError } = await bucket.list(user.id);
+
+            if (listError) {
+                app.log.error(listError, 'Failed to list user storage folder before account deletion');
+            } else if (files && files.length > 0) {
+                const paths = files.map((file) => `${user.id}/${file.name}`);
+                const { error: removeError } = await bucket.remove(paths);
+                if (removeError) {
+                    app.log.error(removeError, 'Failed to delete user storage folder during account deletion');
+                }
+            }
+
+            await db.delete(users).where(eq(users.id, user.id));
+
+            reply.clearCookie('token', {
+                path: '/',
+                secure: isProduction(),
+                sameSite: isProduction() ? 'none' : 'lax',
+            });
+
+            return reply.send({ message: 'Account deleted' });
         },
     );
 
