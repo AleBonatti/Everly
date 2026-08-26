@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const VARIANT_CLASSES = {
     primary: 'bg-accent hover:bg-accent-hover text-accent-foreground',
     secondary: 'bg-transparent border border-border text-foreground/80 hover:bg-surface-inset',
-    destructive: 'bg-transparent border border-border text-destructive hover:bg-destructive-bg',
+    destructive: 'bg-destructive hover:bg-destructive/90 text-white',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ variant = 'primary', isLoading, disabled, children, className = '', ...rest }, ref) {
