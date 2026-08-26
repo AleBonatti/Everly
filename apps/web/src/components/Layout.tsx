@@ -27,7 +27,7 @@ export function Layout() {
 
     async function handleLogout() {
         await logout();
-        queryClient.removeQueries({ queryKey: ['me'] });
+        queryClient.clear();
         navigate('/login');
     }
 
