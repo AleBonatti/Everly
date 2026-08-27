@@ -58,7 +58,7 @@ export function PrivacyPolicyPage() {
 
             <h2>Contact</h2>
             <p>
-                Questions about this policy, or requests regarding your data, can be sent to <a href="mailto:info@alessandrobonatti.com">info@alessandrobonatti.com</a>.
+                Questions about this policy, or requests regarding your data, can be sent to <a href="mailto:info@everlylist.com">info@everlylist.com</a>.
             </p>
         </div>
     );
