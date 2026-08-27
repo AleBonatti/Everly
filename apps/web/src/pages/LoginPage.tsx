@@ -31,7 +31,7 @@ export function LoginPage() {
         mutationFn: withDelay((data: LoginInput) => login(data)),
         onSuccess: (user) => {
             queryClient.setQueryData(['me'], user);
-            navigate('/');
+            navigate('/dashboard');
         },
         onError: (error, variables) => {
             if (error instanceof ApiError && error.status === 403) {

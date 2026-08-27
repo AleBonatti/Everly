@@ -12,6 +12,7 @@ import { UserSettingsPage } from './pages/UserSettingsPage';
 import { AuthLayout } from './components/AuthLayout';
 import { Layout } from './components/Layout';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { IntroPage } from './pages/IntroPage';
 
 export function App() {
     return (
@@ -26,9 +27,11 @@ export function App() {
                 </Route>
             </Route>
 
+            <Route path="/" element={<IntroPage />} />
+
             <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
-                    <Route path="/" element={<ItemsPage />} />
+                    <Route path="/dashboard" element={<ItemsPage />} />
                     <Route path="/categories" element={<CategoriesPage />} />
                     <Route path="/settings" element={<UserSettingsPage />} />
                 </Route>

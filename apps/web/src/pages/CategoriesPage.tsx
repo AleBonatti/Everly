@@ -60,7 +60,7 @@ export function CategoriesPage() {
         <div className="max-w-5xl mx-auto px-8 py-11">
             <div className="flex items-center justify-between mb-7 gap-3 flex-wrap">
                 <div>
-                    <Link to="/" className="text-xs text-muted-foreground block mb-4">
+                    <Link to="/dashboard" className="text-xs text-muted-foreground block mb-4">
                         ← Back to list
                     </Link>
                     <h1 className="text-2xl font-semibold text-foreground">Categories</h1>

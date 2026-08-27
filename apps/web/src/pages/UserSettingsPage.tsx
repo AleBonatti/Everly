@@ -105,7 +105,7 @@ export function UserSettingsPage() {
 
     return (
         <div className="max-w-5xl mx-auto px-8 py-11">
-            <Link to="/" className="text-xs text-muted-foreground block mb-4">
+            <Link to="/dashboard" className="text-xs text-muted-foreground block mb-4">
                 ← Back to list
             </Link>
             <h1 className="text-2xl font-semibold text-foreground mb-1">User settings</h1>
