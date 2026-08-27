@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { logout } from '../lib/api/auth';
-import everlyLogo from '../assets/everly-logo-dark.png';
+import everlyLogo from '../assets/everly-logo.png';
 
 function getInitials(name: string) {
     return name
