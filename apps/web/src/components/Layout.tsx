@@ -5,6 +5,7 @@ import { useClickOutside } from '../hooks/useClickOutside';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { logout } from '../lib/api/auth';
 import everlyLogo from '../assets/everly-logo.png';
+import everlyClaim from '../assets/everly-logo-claim.png';
 
 function getInitials(name: string) {
     return name
@@ -33,10 +34,14 @@ export function Layout() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
-            <header className="flex items-center justify-between px-8 py-2 bg-surface border-b border-border">
-                <img src={everlyLogo} alt="Everly" className="h-14 w-auto" />
+            <header className="grid grid-cols-3 items-center px-8 py-2 bg-surface border-b border-border">
+                <div className="pt-2">
+                    <img src={everlyClaim} alt="A list of things worth doing" className="h-6 w-auto" />
+                </div>
 
-                <div ref={menuRef} className="relative">
+                <img src={everlyLogo} alt="Everly" className="h-10 w-auto justify-self-center" />
+
+                <div ref={menuRef} className="relative justify-self-end">
                     <button onClick={() => setMenuOpen((open) => !open)} className="flex items-center gap-2.5 pl-1.5 pr-2.5 py-1.5 rounded-full bg-surface-inset cursor-pointer">
                         <span className="size-8 rounded-full bg-avatar flex items-center justify-center font-bold text-sm text-accent-foreground">{user ? getInitials(user.name) : ''}</span>
                         <span className="text-sm text-foreground/90">{user?.name}</span>
