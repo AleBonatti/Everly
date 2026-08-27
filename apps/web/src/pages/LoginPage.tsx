@@ -48,8 +48,11 @@ export function LoginPage() {
     return (
         <div className="flex flex-col gap-6">
             <div>
-                <h1 className="text-xl text-foreground mb-1">Welcome back</h1>
-                <p className="text-sm text-muted-foreground">Log in to see your list.</p>
+                <p className="text-lg text-foreground-foreground">
+                    That thing you said you'd try?
+                    <br />
+                    <span className="font-bold">Everly</span> remembers it so you don't have to.
+                </p>
             </div>
 
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="flex flex-col gap-4">
