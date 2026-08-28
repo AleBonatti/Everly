@@ -88,7 +88,7 @@ export function LoginPage() {
                                     disabled={resendMutation.isPending || resendMutation.isSuccess}
                                     className="text-left underline disabled:no-underline disabled:opacity-70"
                                 >
-                                    {resendMutation.isSuccess ? 'Verification email sent' : resendMutation.isPending ? 'Sending...' : 'Send it again'}
+                                    {resendMutation.isPending ? 'Sending...' : resendMutation.isSuccess ? resendMutation.data.message : 'Send it again'}
                                 </button>
                             </>
                         )}
