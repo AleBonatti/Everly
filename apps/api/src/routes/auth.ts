@@ -45,7 +45,13 @@ async function sendVerificationEmail(userId: string, email: string) {
     await sendEmail({
         to: email,
         subject: 'Verify your Everly email',
-        html: `<p>Click the link below to verify your email address. This link expires in 24 hours.</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+        html: `
+            <p style="margin:0 0 20px;">Click the button below to verify your email address. This link expires in 24 hours.</p>
+            <p style="margin:0 0 20px; text-align:center;">
+                <a href="${verifyUrl}" style="display:inline-block; background-color:#e0b64a; color:#1e1815; font-weight:bold; text-decoration:none; padding:12px 28px; border-radius:8px;">Verify email</a>
+            </p>
+            <p style="margin:0; font-size:12px; color:#9c9086; word-break:break-all;">Or paste this link into your browser: ${verifyUrl}</p>
+        `,
     });
 }
 
@@ -206,7 +212,13 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
                     await sendEmail({
                         to: user.email,
                         subject: 'Reset your Everly password',
-                        html: `<p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+                        html: `
+                            <p style="margin:0 0 20px;">Click the button below to reset your password. This link expires in 1 hour.</p>
+                            <p style="margin:0 0 20px; text-align:center;">
+                                <a href="${resetUrl}" style="display:inline-block; background-color:#e0b64a; color:#1e1815; font-weight:bold; text-decoration:none; padding:12px 28px; border-radius:8px;">Reset password</a>
+                            </p>
+                            <p style="margin:0; font-size:12px; color:#9c9086; word-break:break-all;">Or paste this link into your browser: ${resetUrl}</p>
+                        `,
                     });
                 } catch (err) {
                     app.log.error(err, 'Failed to send password reset email');
