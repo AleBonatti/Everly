@@ -21,8 +21,9 @@ export function PrivacyPolicyPage() {
                     <strong>Content you add</strong>: the items you create (title, description, notes, category, importance rating), and any photos you attach to them.
                 </li>
                 <li>
-                    <strong>Location information</strong>: if you enter an address for an item, we store the resulting coordinates and place name. This is only ever entered manually by you — the app
-                    does not access your device's GPS or track your location automatically.
+                    <strong>Location information</strong>: the mobile app may request your device's current GPS location (with your permission) to center the map when adding an item's location — this
+                    live position is used only to display the map and is not stored. We only store location data (coordinates and place name) for an item when you explicitly set it, either by entering
+                    an address or tapping a spot on the map. We do not track your location in the background or outside of this screen.
                 </li>
             </ul>
 
@@ -40,8 +41,8 @@ export function PrivacyPolicyPage() {
 
             <h2>Data retention and deletion</h2>
             <p>
-                Your data is retained for as long as your account exists. If you delete an item, it is permanently removed. If you would like your account and all associated data deleted entirely,
-                contact us using the email below and we will process the request.
+                Your data is retained for as long as your account exists. You can permanently delete your account and all associated data at any time from within the app or website (Settings → Delete
+                account). You can also contact us using the email below to request deletion.
             </p>
 
             <h2>Camera and photo library access (mobile app)</h2>
