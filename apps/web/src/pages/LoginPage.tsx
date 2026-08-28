@@ -85,7 +85,7 @@ export function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => resendMutation.mutate({ email: unverifiedEmail })}
-                                    disabled={resendMutation.isPending || resendMutation.isSuccess}
+                                    disabled={resendMutation.isPending}
                                     className="text-left underline disabled:no-underline disabled:opacity-70"
                                 >
                                     {resendMutation.isPending ? 'Sending...' : resendMutation.isSuccess ? resendMutation.data.message : 'Send it again'}
